@@ -1,0 +1,17 @@
+{
+  "name": "student-manager",
+  "version": "1.0.0",
+  "description": "Student Manager with login + CRUD web pages + RESTful APIs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.1",
+    "ejs": "^3.1.10",
+    "mongoose": "^8.8.0",
+    "express-session": "^1.18.1",
+    "bcryptjs": "^2.4.3",
+    "method-override": "^3.0.0"
+  }
+}
