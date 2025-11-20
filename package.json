@@ -8,17 +8,16 @@
     "postinstall": "echo 'Dependencies installed!'"
   },
   "dependencies": {
-    "express": "^4.21.1",
-    "ejs": "^3.1.10",
-    "mongoose": "^8.8.0",
-    "express-session": "^1.18.1",
-    "bcryptjs": "^2.4.3",
-    "method-override": "^3.0.0",
-    "passport": "^0.7.0",
-    "passport-facebook": "^3.0.0"
-  },
+  "express": "^4.21.1",
+  "ejs": "^3.1.10",
+  "mongoose": "^8.8.0",
+  "express-session": "^1.18.1",
+  "bcryptjs": "^2.4.3",
+  "method-override": "^3.0.0"
+},
   "engines": {
     "node": ">=18.0.0"
   }
 }
+
 
