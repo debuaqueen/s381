@@ -117,33 +117,40 @@ app.get('/students/new', isAuth, (req, res) => res.render('new'));
 app.post('/students', isAuth, async (req, res) => {
   const { name, studentId, age, major } = req.body;
 
-  // Validation
+  // Required fields
   if (!name || !studentId || !age || !major) {
     return res.render('new', { error: 'All fields are required!' });
   }
-  if (typeof name !== 'string' || name.trim().length < 2) {
-    return res.render('new', { error: 'Name must be at least 2 characters' });
+
+  // Name validation
+  if (typeof name !== 'string' || name.trim().length < 2 || name.trim().length > 50) {
+    return res.render('new', { error: 'Name must be 2–50 characters' });
   }
-  if (isNaN(age) || age < 17 || age > 100) {
+
+  // Student ID: 8–10 digits only
+  if (!/^\d{8,10}$/.test(studentId.trim())) {
+    return res.render('new', { error: 'Student ID must be 8–10 digits only' });
+  }
+
+  // Age: 17–100
+  const ageNum = Number(age);
+  if (isNaN(ageNum) || ageNum < 17 || ageNum > 100) {
     return res.render('new', { error: 'Age must be between 17 and 100' });
-  }
-  if (major.trim().length < 2) {
-    return res.render('new', { error: 'Major is required' });
   }
 
   try {
     await Student.create({
       name: name.trim(),
       studentId: studentId.trim(),
-      age: Number(age),
+      age: ageNum,
       major: major.trim()
     });
     res.redirect('/students');
   } catch (err) {
     if (err.code === 11000) {
-      res.render('new', { error: 'Student ID already exists!' });
+      res.render('new', { error: 'This Student ID already exists!' });
     } else {
-      res.render('new', { error: 'Failed to create student' });
+      res.render('new', { error: 'Failed to create student. Please try again.' });
     }
   }
 });
@@ -207,3 +214,4 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`Local → http://localhost:${PORT}`);
   console.log(`Render → https://s381-kvzy.onrender.com`);
 });
+
