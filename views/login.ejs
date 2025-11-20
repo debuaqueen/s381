@@ -4,44 +4,59 @@
   <meta charset="UTF-8">
   <title>Login - Student Manager</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 </head>
 <body class="bg-light">
   <div class="container mt-5 col-md-4">
-    <h1 class="text-center mb-4">Student Manager Login</h1>
+    <h1 class="text-center mb-4 fw-bold">Student Manager</h1>
 
+    <!-- Error Message -->
     <% if (error) { %>
-      <div class="alert alert-danger"><%= error %></div>
+      <div class="alert alert-danger text-center"><%= error %></div>
     <% } %>
 
-    <div class="card border-primary mb-4">
-      <div class="card-header bg-primary text-white">
-        <strong>Default Account (Demo)</strong>
+    <!-- Default Account Info -->
+    <div class="card border-primary mb-4 shadow-sm">
+      <div class="card-header bg-primary text-white text-center">
+        <strong><i class="bi bi-person-circle"></i> Default Demo Account</strong>
       </div>
-      <div class="card-body">
+      <div class="card-body text-center">
         <p class="mb-1"><strong>Username:</strong> <code>admin</code></p>
         <p class="mb-0"><strong>Password:</strong> <code>admin123</code></p>
+        <small class="text-muted">(You can change it via Forgot Password)</small>
       </div>
     </div>
 
-    <form action="/login" method="POST">
-      <div class="mb-3">
-        <label class="form-label">Username</label>
-        <input type="text" name="username" class="form-control" value="admin" required>
+    <!-- Login Form -->
+    <form action="/login" method="POST" class="card shadow-sm">
+      <div class="card-body">
+        <div class="mb-3">
+          <label class="form-label">Username</label>
+          <input type="text" name="username" class="form-control" value="admin" required autocomplete="username">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" class="form-control" value="admin123" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary w-100 fw-bold">
+          <i class="bi bi-box-arrow-in-right"></i> Login
+        </button>
       </div>
-      <div class="mb-3">
-        <label class="form-label">Password</label>
-        <input type="password" name="password" class="form-control" value="admin123" required>
-      </div>
-      <button type="submit" class="btn btn-primary w-100 mb-2">Login</button>
     </form>
 
-    <div class="text-center">
-      <a href="/reset-password" class="btn btn-outline-warning btn-sm">
-        Reset Password to Default
+    <!-- Forgot Password Link -->
+    <div class="text-center mt-4">
+      <a href="/forgot-password" class="text-decoration-none link-primary">
+        <i class="bi bi-key"></i> Forgot Password?
       </a>
     </div>
 
-    <!-- Remove signup link completely -->
+    <!-- Bonus: Session Demo Link -->
+    <div class="text-center mt-3">
+      <small class="text-muted">
+        <a href="/session" class="link-secondary">View Session & Cookie Demo →</a>
+      </small>
+    </div>
   </div>
 </body>
 </html>
