@@ -20,7 +20,12 @@ mongoose.connect(mongoURI, {
   console.error('MongoDB connection failed:', err);
   process.exit(1);
 });
+const passport = require('passport');
+require('./config/passport')(passport); // ← Add this line
 
+// Add these middlewares after session()
+app.use(passport.initialize());
+app.use(passport.session());
 // Models
 const User = require('./models/User');
 const Student = require('./models/Student');
@@ -44,7 +49,18 @@ const isAuthenticated = (req, res, next) => {
   if (req.session.username) return next();
   res.redirect('/login');
 };
+// ======================== FACEBOOK AUTH ========================
+app.get('/auth/facebook',
+  passport.authenticate('facebook', { scope: ['email'] })
+);
 
+app.get('/auth/facebook/callback',
+  passport.authenticate('facebook', { failureRedirect: '/login' }),
+  (req, res) => {
+    req.session.username = req.user.username; // Keep your old session compatible
+    res.redirect('/students');
+  }
+);
 // ======================== AUTH ROUTES ========================
 app.get('/login', (req, res) => res.render('login', { error: null }));
 
