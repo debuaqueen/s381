@@ -10,34 +10,25 @@
 
 
 
-<!-- Cookie Consent Banner — NO EXTRA PACKAGE NEEDED -->
-<div id="cookieBanner" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); 
-     background:#1e40af; color:white; padding:16px 24px; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.3); 
-     z-index:9999; max-width:420px; width:calc(100% - 40px); text-align:center; font-family:system-ui;">
-  <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
-    <div style="text-align:left;">
-      We use cookies<br>
+<!-- Cookie Consent Banner - Works 100% on Render (no layout needed) -->
+<div id="cookieBanner" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#1e40af; color:white; padding:16px 24px; border-radius:16px; box-shadow:0 12px 40px rgba(0,0,0,0.4); z-index:9999; max-width:440px; width:calc(100% - 40px); font-family:system-ui,sans-serif;">
+  <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:15px;">
+    <div>
+      <strong>We use cookies</strong><br>
       <small style="opacity:0.9;">For secure login and session management</small>
     </div>
     <div>
-      <button onclick="acceptCookies()" class="btn btn-light btn-sm">Accept</button>
-      <button onclick="declineCookies()" class="btn btn-outline-light btn-sm ms-2">Decline</button>
+      <button onclick="localStorage.setItem('cookieConsent','accepted');this.parentElement.parentElement.parentElement.style.display='none'" 
+              class="btn btn-light btn-sm">Accept</button>
+      <button onclick="localStorage.setItem('cookieConsent','declined');this.parentElement.parentElement.parentElement.style.display='none'" 
+              class="btn btn-outline-light btn-sm ms-2">Decline</button>
     </div>
   </div>
 </div>
 
 <script>
-  // Show banner only if user hasn't decided
   if (!localStorage.getItem('cookieConsent')) {
     document.getElementById('cookieBanner').style.display = 'block';
-  }
-  function acceptCookies() {
-    localStorage.setItem('cookieConsent', 'accepted');
-    document.getElementById('cookieBanner').style.display = 'none';
-  }
-  function declineCookies() {
-    localStorage.setItem('cookieConsent', 'declined');
-    document.getElementById('cookieBanner').style.display = 'none';
   }
 </script>
 
@@ -103,5 +94,6 @@
 </div>
 </body>
 </html>
+
 
 
