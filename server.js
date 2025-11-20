@@ -33,6 +33,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(methodOverride('_method'));
 
+// Bonus: Session & Cookie Demo Page
+app.get('/session', (req, res) => {
+  res.render('session', { 
+    user: req.session.username ? { username: req.session.username } : null,
+    req: req 
+  });
+});
+
+
 // 1. Session MUST come BEFORE passport
 app.use(session({
   secret: 'student-manager-secret-2025',
@@ -173,3 +182,4 @@ app.listen(PORT, () => {
   console.log(`Local: http://localhost:${PORT}`);
   console.log(`Deployed: https://s381-kvzy.onrender.com`);
 });
+
