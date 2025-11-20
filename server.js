@@ -8,11 +8,11 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ==================== MongoDB Connection (Clean & Modern) ====================
+// ==================== MongoDB ====================
 mongoose.connect('mongodb+srv://wongyanho:123@cluster0.603b9e0.mongodb.net/studentdb')
   .then(() => console.log('MongoDB Connected Successfully'))
   .catch(err => {
-    console.error('MongoDB connection error:', err);
+    console.error('MongoDB error:', err);
     process.exit(1);
   });
 
@@ -24,7 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(methodOverride('_method'));
 
-// ==================== Session (Works on localhost AND Render) ====================
+// ==================== SESSION — THE ONLY ONE THAT WORKS EVERYWHERE ====================
 app.use(session({
   secret: 'student-manager-2025-secret-key',
   name: 'sid',
@@ -32,9 +32,9 @@ app.use(session({
   saveUninitialized: false,
   rolling: true,
   cookie: {
-    maxAge: 24 * 60 * 60 * 1000,  // 24 hours
+    maxAge: 24 * 60 * 60 * 1000,     // 24 hours
     httpOnly: true,
-    secure: !!process.env.PORT,   // true on Render (HTTPS), false on localhost
+    secure: process.env.RENDER === 'true',  // ← TRUE only on Render.com
     sameSite: 'lax'
   }
 }));
@@ -43,50 +43,42 @@ app.use(session({
 const User = require('./models/User');
 const Student = require('./models/Student');
 
-// ==================== Auth Middleware ====================
+// ==================== Auth ====================
 const isAuth = (req, res, next) => {
   if (req.session.username) return next();
   res.redirect('/login');
 };
 
-// ==================== Create Default Admin ====================
+// ==================== Create Admin ====================
 async function createAdmin() {
   try {
-    const exists = await User.findOne({ username: 'admin' });
-    if (!exists) {
+    if (!await User.findOne({ username: 'admin' })) {
       const hash = await bcrypt.hash('admin123', 10);
-      await new User({ username: 'admin', password: hash }).save();
-      console.log('Default admin created → username: admin | password: admin123');
+      await User.create({ username: 'admin', password: hash });
+      console.log('Default admin created: admin / admin123');
     }
-  } catch (err) {
-    console.error('Failed to create admin:', err);
-  }
+  } catch (e) { console.error('Admin create error:', e); }
 }
 createAdmin();
 
 // ==================== Routes ====================
-app.get('/', (req, res) => {
-  req.session.username ? res.redirect('/students') : res.redirect('/login');
-});
+app.get('/', (req, res) => req.session.username ? res.redirect('/students') : res.redirect('/login'));
 
 app.get('/login', (req, res) => res.render('login', { error: null }));
 
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
-
   try {
     const user = await User.findOne({ username });
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+    if (!user || !await bcrypt.compare(password, user.password)) {
       return res.render('login', { error: 'Invalid username or password' });
     }
 
-    req.session.regenerate(err => {
-      if (err) return res.render('login', { error: 'Login failed' });
+    req.session.regenerate(() => {
       req.session.username = username;
       res.redirect('/students');
     });
-  } catch (err) {
-    console.error('Login error:', err);
+  } catch (e) {
     res.render('login', { error: 'Server error' });
   }
 });
@@ -96,12 +88,12 @@ app.get('/logout', (req, res) => {
 });
 
 app.get('/session', (req, res) => {
-  res.render('session', { 
-    user: req.session.username ? { username: req.session.username } : null 
+  res.render('session', {
+    user: req.session.username ? { username: req.session.username } : null
   });
 });
 
-// Forgot Password Routes
+// Forgot Password
 app.get('/forgot-password', (req, res) => res.render('forgot-password', { error: null }));
 app.post('/forgot-password', async (req, res) => {
   const user = await User.findOne({ username: req.body.username });
@@ -115,46 +107,42 @@ app.post('/set-new-password', async (req, res) => {
 
   const hash = await bcrypt.hash(password, 10);
   await User.updateOne({ username }, { password: hash });
-  res.render('set-new-password', { username, error: null, success: 'Password updated! You can now login.' });
+  res.render('set-new-password', { username, error: null, success: 'Password changed! You can now login.' });
 });
 
-// ==================== CRUD Routes ====================
+// ==================== CRUD ====================
 app.get('/students', isAuth, async (req, res) => {
   const students = await Student.find();
   res.render('index', { students, username: req.session.username, query: {} });
 });
-
 app.get('/students/new', isAuth, (req, res) => res.render('new'));
 app.post('/students', isAuth, async (req, res) => {
   await Student.create(req.body);
   res.redirect('/students');
 });
-
 app.get('/students/:id/edit', isAuth, async (req, res) => {
   const student = await Student.findById(req.params.id);
   res.render('edit', { student });
 });
-
 app.put('/students/:id', isAuth, async (req, res) => {
   await Student.findByIdAndUpdate(req.params.id, req.body);
   res.redirect('/students');
 });
-
 app.delete('/students/:id', isAuth, async (req, res) => {
   await Student.findByIdAndDelete(req.params.id);
   res.redirect('/students');
 });
 
-// ==================== REST API ====================
+// ==================== API ====================
 app.get('/api/students', async (req, res) => res.json(await Student.find()));
 app.post('/api/students', async (req, res) => {
   try { res.status(201).json(await Student.create(req.body)); }
   catch (e) { res.status(400).json({ error: e.message }); }
 });
 
-// ==================== Start Server ====================
+// ==================== Start ====================
 app.listen(PORT, '0.0.0.0', () => {
-  console.log('Student Manager is RUNNING!');
-  console.log(`Local → http://localhost:${PORT}`);
-  console.log(`Render → https://s381-kvzy.onrender.com`);
+  console.log('Student Manager RUNNING!');
+  console.log(`Local:  http://localhost:${PORT}`);
+  console.log(`Render: https://s381-kvzy.onrender.com`);
 });
