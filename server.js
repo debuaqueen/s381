@@ -28,14 +28,14 @@ app.use(methodOverride('_method'));
 
 // FIXED SESSION FOR RENDER (the key change!)
 app.use(session({
-  store: new FileStore(),  // Persists sessions on Render
+  store: new FileStore({ path: './sessions' }), // optional but safer
   secret: 'student-manager-secret-2025',
   resave: false,
   saveUninitialized: false,
   cookie: {
     maxAge: 24 * 60 * 60 * 1000,
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',  // true on Render, false local
+    secure: true,        // ← FORCE TRUE ON RENDER
     sameSite: 'lax'
   }
 }));
@@ -212,3 +212,4 @@ app.listen(PORT, () => {
     console.log(`Local: http://localhost:${PORT}`);
   }
 });
+
