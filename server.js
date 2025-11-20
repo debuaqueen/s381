@@ -7,6 +7,11 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+
+const expressLayout = require('express-ejs-layouts');
+app.use(expressLayout);
+app.set('layout', 'layout');
+
 // ==================== MongoDB ====================
 mongoose.connect('mongodb+srv://wongyanho:123@cluster0.603b9e0.mongodb.net/studentdb')
   .then(() => console.log('MongoDB connected'))
@@ -220,5 +225,6 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`Local → http://localhost:${PORT}`);
   console.log(`Render → https://s381-kvzy.onrender.com`);
 });
+
 
 
