@@ -47,5 +47,22 @@
       </a>
     </div>
   </div>
+<% layout('layout') -%>
+<div class="container mt-5 col-md-4">
+  <div class="text-center mb-4">
+    <h1 class="fw-bold text-primary">Student Manager</h1>
+    <p class="text-muted">COMPS381F • Group 4</p>
+  </div>
+
+  <% if (error) { %>
+    <div class="alert alert-danger text-center"><%= error %></div>
+  <% } %>
+
+  <!-- your existing login form here -->
+  <form action="/login" method="POST" class="card shadow">
+    <!-- ... your form ... -->
+  </form>
+</div>
 </body>
 </html>
+
