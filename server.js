@@ -42,7 +42,7 @@ User.findOne({ username: 'admin' }).then(user => {
   }
 });
 
-// ==================== Auth ====================
+// ==================== Auth Middleware ====================
 const isAuth = (req, res, next) => {
   if (req.session && req.session.loggedin) return next();
   res.redirect('/login');
@@ -68,35 +68,33 @@ app.post('/login', async (req, res) => {
 });
 
 app.get('/logout', (req, res) => {
-  req.session.destroy();
-  res.redirect('/login');
+  req.session.destroy(() => res.redirect('/login'));
 });
 
-app.get('/session', (req, res) => {
-  res.render('session', {
-    user: req.session.loggedin ? { username: req.session.username } : null
-  });
-});
+// REMOVED: /session route completely (no more demo link)
 
 // Forgot Password
 app.get('/forgot-password', (req, res) => res.render('forgot-password', { error: null }));
 app.post('/forgot-password', async (req, res) => {
   const user = await User.findOne({ username: req.body.username });
-  if (!user) return res.render('forgot-password', { error: 'Not found' });
+  if (!user) return res.render('forgot-password', { error: 'User not found' });
   res.render('set-new-password', { username: req.body.username, error: null, success: null });
 });
 app.post('/set-new-password', async (req, res) => {
   if (req.body.password !== req.body.confirm) {
     return res.render('set-new-password', { username: req.body.username, error: 'Passwords do not match', success: null });
   }
+  if (req.body.password.length < 6) {
+    return res.render('set-new-password', { username: req.body.username, error: 'Password too short (min 6 chars)', success: null });
+  }
   const hash = await bcrypt.hash(req.body.password, 10);
   await User.updateOne({ username: req.body.username }, { password: hash });
-  res.render('set-new-password', { username: req.body.username, error: null, success: 'Password changed!' });
+  res.render('set-new-password', { username: req.body.username, error: null, success: 'Password changed successfully!' });
 });
 
-// ==================== CRUD + SEARCH (FIXED!) ====================
+// ==================== SEARCH + LIST ====================
 app.get('/students', isAuth, async (req, res) => {
-  const query = req.query;  // ← This was missing!
+  const query = req.query;
   let filter = {};
 
   if (query.name) filter.name = { $regex: query.name, $options: 'i' };
@@ -108,39 +106,104 @@ app.get('/students', isAuth, async (req, res) => {
 
   res.render('index', {
     students,
-    username: req.session.username || 'User',
-    query: query   // ← NOW query is passed → no more error!
+    username: req.session.username,
+    query
   });
 });
 
+// ==================== CREATE STUDENT (WITH STRONG VALIDATION) ====================
 app.get('/students/new', isAuth, (req, res) => res.render('new'));
+
 app.post('/students', isAuth, async (req, res) => {
-  await Student.create(req.body);
-  res.redirect('/students');
+  const { name, studentId, age, major } = req.body;
+
+  // Validation
+  if (!name || !studentId || !age || !major) {
+    return res.render('new', { error: 'All fields are required!' });
+  }
+  if (typeof name !== 'string' || name.trim().length < 2) {
+    return res.render('new', { error: 'Name must be at least 2 characters' });
+  }
+  if (isNaN(age) || age < 17 || age > 100) {
+    return res.render('new', { error: 'Age must be between 17 and 100' });
+  }
+  if (major.trim().length < 2) {
+    return res.render('new', { error: 'Major is required' });
+  }
+
+  try {
+    await Student.create({
+      name: name.trim(),
+      studentId: studentId.trim(),
+      age: Number(age),
+      major: major.trim()
+    });
+    res.redirect('/students');
+  } catch (err) {
+    if (err.code === 11000) {
+      res.render('new', { error: 'Student ID already exists!' });
+    } else {
+      res.render('new', { error: 'Failed to create student' });
+    }
+  }
 });
+
+// ==================== EDIT STUDENT (WITH VALIDATION) ====================
 app.get('/students/:id/edit', isAuth, async (req, res) => {
   const student = await Student.findById(req.params.id);
-  res.render('edit', { student });
+  if (!student) return res.status(404).send('Student not found');
+  res.render('edit', { student, error: null });
 });
+
 app.put('/students/:id', isAuth, async (req, res) => {
-  await Student.findByIdAndUpdate(req.params.id, req.body);
-  res.redirect('/students');
+  const { name, studentId, age, major } = req.body;
+
+  if (!name || !studentId || !age || !major) {
+    const student = await Student.findById(req.params.id);
+    return res.render('edit', { student, error: 'All fields are required!' });
+  }
+  if (isNaN(age) || age < 17 || age > 100) {
+    const student = await Student.findById(req.params.id);
+    return res.render('edit', { student, error: 'Age must be 17–100' });
+  }
+
+  try {
+    await Student.findByIdAndUpdate(req.params.id, {
+      name: name.trim(),
+      studentId: studentId.trim(),
+      age: Number(age),
+      major: major.trim()
+    });
+    res.redirect('/students');
+  } catch (err) {
+    const student = await Student.findById(req.params.id);
+    if (err.code === 11000) {
+      res.render('edit', { student, error: 'Student ID already exists!' });
+    } else {
+      res.render('edit', { student, error: 'Update failed' });
+    }
+  }
 });
+
 app.delete('/students/:id', isAuth, async (req, res) => {
   await Student.findByIdAndDelete(req.params.id);
   res.redirect('/students');
 });
 
-// ==================== API ====================
+// ==================== REST API ====================
 app.get('/api/students', async (req, res) => res.json(await Student.find()));
 app.post('/api/students', async (req, res) => {
-  try { res.status(201).json(await Student.create(req.body)); }
-  catch (e) { res.status(400).json({ error: e.message }); }
+  try {
+    const student = await Student.create(req.body);
+    res.status(201).json(student);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
 });
 
-// ==================== Start ====================
+// ==================== Start Server ====================
 app.listen(PORT, '0.0.0.0', () => {
-  console.log('Server RUNNING!');
-  console.log('Local → http://localhost:3000');
-  console.log('Render → https://s381-kvzy.onrender.com');
+  console.log('Student Manager is RUNNING!');
+  console.log(`Local → http://localhost:${PORT}`);
+  console.log(`Render → https://s381-kvzy.onrender.com`);
 });
