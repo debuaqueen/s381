@@ -4,28 +4,20 @@ const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const methodOverride = require('method-override');
 const path = require('path');
-const passport = require('passport');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ==================== MONGODB CONNECTION ====================
 const mongoURI = 'mongodb+srv://wongyanho:123@cluster0.603b9e0.mongodb.net/studentdb?retryWrites=true&w=majority';
+mongoose.connect(mongoURI)
+  .then(() => console.log('MongoDB Atlas Connected Successfully!'))
+  .catch(err => {
+    console.error('MongoDB connection failed:', err);
+    process.exit(1);
+  });
 
-mongoose.connect(mongoURI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log('MongoDB Atlas Connected Successfully!'))
-.catch(err => {
-  console.error('MongoDB connection failed:', err);
-  process.exit(1);
-});
-
-// ==================== PASSPORT CONFIG ====================
-require('./config/passport')(passport);  // Load Facebook strategy
-
-// ==================== MIDDLEWARE - CORRECT ORDER!!! ====================
+// ==================== MIDDLEWARE ====================
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static('public'));
@@ -33,26 +25,18 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(methodOverride('_method'));
 
-// Bonus: Session & Cookie Demo Page
-app.get('/session', (req, res) => {
-  res.render('session', { 
-    user: req.session.username ? { username: req.session.username } : null,
-    req: req 
-  });
-});
-
-
-// 1. Session MUST come BEFORE passport
+// Session with secure cookie settings
 app.use(session({
   secret: 'student-manager-secret-2025',
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 24 * 60 * 60 * 1000 }
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000,  // 24 hours
+    httpOnly: true,
+    secure: true,                 // HTTPS on Render
+    sameSite: 'lax'
+  }
 }));
-
-// 2. Then passport middleware
-app.use(passport.initialize());
-app.use(passport.session());
 
 // ==================== MODELS ====================
 const User = require('./models/User');
@@ -60,25 +44,32 @@ const Student = require('./models/Student');
 
 // ==================== AUTH MIDDLEWARE ====================
 const isAuthenticated = (req, res, next) => {
-  if (req.session.username || req.isAuthenticated()) return next();
+  if (req.session.username) return next();
   res.redirect('/login');
 };
 
-// ==================== FACEBOOK AUTH ROUTES ====================
-app.get('/auth/facebook',
-  passport.authenticate('facebook', { scope: ['email'] })
-);
-
-app.get('/auth/facebook/callback',
-  passport.authenticate('facebook', { failureRedirect: '/login' }),
-  (req, res) => {
-    req.session.username = req.user.username;  // Keep compatibility with your old code
-    res.redirect('/students');
+// ==================== CREATE DEFAULT ADMIN ACCOUNT ====================
+async function createDefaultAdmin() {
+  const admin = await User.findOne({ username: 'admin' });
+  if (!admin) {
+    const hashed = await bcrypt.hash('admin123', 10);
+    await User.create({ username: 'admin', password: hashed });
+    console.log('Default admin created: admin / admin123');
   }
-);
+}
+createDefaultAdmin();
 
-// ==================== LOCAL AUTH ROUTES ====================
-app.get('/login', (req, res) => res.render('login', { error: null }));
+// ==================== ROUTES ====================
+
+// Home - redirect
+app.get('/', (req, res) => {
+  req.session.username ? res.redirect('/students') : res.redirect('/login');
+});
+
+// Login Page
+app.get('/login', (req, res) => {
+  res.render('login', { error: null });
+});
 
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
@@ -94,32 +85,33 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.get('/signup', (req, res) => res.render('signup', { error: null }));
-
-app.post('/signup', async (req, res) => {
-  const { username, password } = req.body;
+// Reset Password to Default
+app.get('/reset-password', async (req, res) => {
   try {
-    if (await User.findOne({ username })) {
-      return res.render('signup', { error: 'Username already exists' });
-    }
-    const hashed = await bcrypt.hash(password, 10);
-    await User.create({ username, password: hashed });
-    req.session.username = username;
-    res.redirect('/students');
+    const hashed = await bcrypt.hash('admin123', 10);
+    await User.findOneAndUpdate(
+      { username: 'admin' },
+      { password: hashed },
+      { upsert: true }
+    );
+    res.render('reset-done');
   } catch (err) {
-    res.render('signup', { error: 'Server error' });
+    res.status(500).send('Reset failed');
   }
 });
 
+// Logout
 app.get('/logout', (req, res) => {
   req.session.destroy();
-  req.logout(() => {}); // Clear passport session too
   res.redirect('/login');
 });
 
-app.get('/', (req, res) => 
-  req.session.username || req.isAuthenticated() ? res.redirect('/students') : res.redirect('/login')
-);
+// Session Demo Page (Bonus!)
+app.get('/session', (req, res) => {
+  res.render('session', {
+    user: req.session.username ? { username: req.session.username } : null
+  });
+});
 
 // ==================== CRUD ROUTES (Protected) ====================
 app.get('/students', isAuthenticated, async (req, res) => {
@@ -132,10 +124,10 @@ app.get('/students', isAuthenticated, async (req, res) => {
     if (req.query.maxAge) query.age.$lte = Number(req.query.maxAge);
   }
   const students = await Student.find(query);
-  res.render('index', { 
-    students, 
-    query: req.query, 
-    username: req.session.username || req.user?.username 
+  res.render('index', {
+    students,
+    query: req.query,
+    username: req.session.username
   });
 });
 
@@ -182,4 +174,3 @@ app.listen(PORT, () => {
   console.log(`Local: http://localhost:${PORT}`);
   console.log(`Deployed: https://s381-kvzy.onrender.com`);
 });
-
