@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
+const FileStore = require('session-file-store')(session);  // ← NEW: Session store for Render
 const bcrypt = require('bcryptjs');
 const methodOverride = require('method-override');
 const path = require('path');
@@ -25,15 +26,16 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(methodOverride('_method'));
 
-// Session (must be BEFORE routes)
+// FIXED SESSION FOR RENDER (the key change!)
 app.use(session({
+  store: new FileStore(),  // Persists sessions on Render
   secret: 'student-manager-secret-2025',
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: 24 * 60 * 60 * 1000,   // 24 hours
+    maxAge: 24 * 60 * 60 * 1000,
     httpOnly: true,
-    secure: process.env.PORT ? true : false,  // auto detect Render
+    secure: process.env.NODE_ENV === 'production',  // true on Render, false local
     sameSite: 'lax'
   }
 }));
@@ -74,7 +76,6 @@ app.get('/login', (req, res) => {
   res.render('login', { error: null });
 });
 
-// 100% WORKING LOGIN — This is the magic version
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
@@ -84,11 +85,19 @@ app.post('/login', async (req, res) => {
       return res.render('login', { error: 'Invalid username or password' });
     }
 
-    // THE FINAL FIX THAT WORKS EVERYWHERE
-    req.session.regenerate(() => {
+    // FIXED: Regenerate + save for Render reliability
+    req.session.regenerate((err) => {
+      if (err) {
+        console.error('Regenerate error:', err);
+        return res.render('login', { error: 'Login failed' });
+      }
       req.session.username = username;
-      req.session.save(() => {
-        res.redirect('/students');
+      req.session.save((err) => {
+        if (err) {
+          console.error('Session save error:', err);
+          return res.render('login', { error: 'Login failed' });
+        }
+        res.redirect('/students');  // Success!
       });
     });
 
@@ -98,7 +107,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// === FORGOT PASSWORD FLOW ===
+// Forgot Password Flow
 app.get('/forgot-password', (req, res) => {
   res.render('forgot-password', { error: null });
 });
@@ -116,34 +125,18 @@ app.post('/set-new-password', async (req, res) => {
   const { username, password, confirm } = req.body;
   
   if (password !== confirm) {
-    return res.render('set-new-password', { 
-      username, 
-      error: 'Passwords do not match!', 
-      success: null 
-    });
+    return res.render('set-new-password', { username, error: 'Passwords do not match!', success: null });
   }
   if (password.length < 5) {
-    return res.render('set-new-password', { 
-      username, 
-      error: 'Password too short (min 5 chars)', 
-      success: null 
-    });
+    return res.render('set-new-password', { username, error: 'Password too short (min 5 chars)', success: null });
   }
 
   try {
     const hashed = await bcrypt.hash(password, 10);
     await User.findOneAndUpdate({ username }, { password: hashed });
-    res.render('set-new-password', { 
-      username, 
-      error: null, 
-      success: 'Password updated successfully! You can now login.' 
-    });
+    res.render('set-new-password', { username, error: null, success: 'Password updated! Login with your new password.' });
   } catch (err) {
-    res.render('set-new-password', { 
-      username, 
-      error: 'Update failed', 
-      success: null 
-    });
+    res.render('set-new-password', { username, error: 'Update failed', success: null });
   }
 });
 
@@ -152,15 +145,21 @@ app.get('/logout', (req, res) => {
 });
 
 app.get('/session', (req, res) => {
-  res.render('session', {
-    user: req.session.username ? { username: req.session.username } : null
-  });
+  res.render('session', { user: req.session.username ? { username: req.session.username } : null });
 });
 
 // ==================== CRUD ROUTES ====================
 app.get('/students', isAuthenticated, async (req, res) => {
-  const students = await Student.find();
-  res.render('index', { students, username: req.session.username, query: {} });
+  let query = {};
+  if (req.query.name) query.name = { $regex: req.query.name, $options: 'i' };
+  if (req.query.major) query.major = { $regex: req.query.major, $options: 'i' };
+  if (req.query.minAge || req.query.maxAge) {
+    query.age = {};
+    if (req.query.minAge) query.age.$gte = Number(req.query.minAge);
+    if (req.query.maxAge) query.age.$lte = Number(req.query.maxAge);
+  }
+  const students = await Student.find(query);
+  res.render('index', { students, query: req.query, username: req.session.username });
 });
 
 app.get('/students/new', isAuthenticated, (req, res) => res.render('new'));
@@ -168,17 +167,15 @@ app.post('/students', isAuthenticated, async (req, res) => {
   await Student.create(req.body);
   res.redirect('/students');
 });
-
 app.get('/students/:id/edit', isAuthenticated, async (req, res) => {
   const student = await Student.findById(req.params.id);
+  if (!student) return res.status(404).send('Student not found');
   res.render('edit', { student });
 });
-
 app.put('/students/:id', isAuthenticated, async (req, res) => {
-  await Student.findByIdAndUpdate(req.params.id, req.body);
+  await Student.findByIdAndUpdate(req.params.id, req.body, { runValidators: true });
   res.redirect('/students');
 });
-
 app.delete('/students/:id', isAuthenticated, async (req, res) => {
   await Student.findByIdAndDelete(req.params.id);
   res.redirect('/students');
@@ -190,9 +187,15 @@ app.get('/api/students/:id', async (req, res) => {
   const s = await Student.findById(req.params.id);
   s ? res.json(s) : res.status(404).json({ error: 'Not found' });
 });
-app.post('/api/students', async (req, res) => res.status(201).json(await Student.create(req.body)));
+app.post('/api/students', async (req, res) => {
+  try {
+    res.status(201).json(await Student.create(req.body));
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
 app.put('/api/students/:id', async (req, res) => {
-  const s = await Student.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  const s = await Student.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
   s ? res.json(s) : res.status(404).json({ error: 'Not found' });
 });
 app.delete('/api/students/:id', async (req, res) => {
