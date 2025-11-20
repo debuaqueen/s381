@@ -8,9 +8,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 
-const expressLayout = require('express-ejs-layouts');
-app.use(expressLayout);
-app.set('layout', 'layout');
 
 // ==================== MongoDB ====================
 mongoose.connect('mongodb+srv://wongyanho:123@cluster0.603b9e0.mongodb.net/studentdb')
@@ -25,11 +22,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(methodOverride('_method'));
 
-
-app.use((req, res, next) => {
-  res.locals.layout = (template) => `<% layout('${template}') -%>${res.locals.body || ''}`;
-  next();
-});
 
 // ==================== Simple Session ====================
 app.use(require('express-session')({
@@ -225,6 +217,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`Local → http://localhost:${PORT}`);
   console.log(`Render → https://s381-kvzy.onrender.com`);
 });
+
 
 
 
