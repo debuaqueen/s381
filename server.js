@@ -20,6 +20,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(methodOverride('_method'));
 
+
+app.use((req, res, next) => {
+  res.locals.layout = (template) => `<% layout('${template}') -%>${res.locals.body || ''}`;
+  next();
+});
+
 // ==================== Simple Session ====================
 app.use(require('express-session')({
   secret: 'simple-secret-2025',
@@ -214,4 +220,5 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`Local → http://localhost:${PORT}`);
   console.log(`Render → https://s381-kvzy.onrender.com`);
 });
+
 
