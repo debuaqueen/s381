@@ -4,11 +4,12 @@ const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const methodOverride = require('method-override');
 const path = require('path');
+const passport = require('passport');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ==================== DIRECT MONGODB ATLAS CONNECTION ====================
+// ==================== MONGODB CONNECTION ====================
 const mongoURI = 'mongodb+srv://wongyanho:123@cluster0.603b9e0.mongodb.net/studentdb?retryWrites=true&w=majority';
 
 mongoose.connect(mongoURI, {
@@ -20,23 +21,19 @@ mongoose.connect(mongoURI, {
   console.error('MongoDB connection failed:', err);
   process.exit(1);
 });
-const passport = require('passport');
-require('./config/passport')(passport); // ← Add this line
 
-// Add these middlewares after session()
-app.use(passport.initialize());
-app.use(passport.session());
-// Models
-const User = require('./models/User');
-const Student = require('./models/Student');
+// ==================== PASSPORT CONFIG ====================
+require('./config/passport')(passport);  // Load Facebook strategy
 
-// Middleware
+// ==================== MIDDLEWARE - CORRECT ORDER!!! ====================
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(methodOverride('_method'));
-app.use(express.static('public')); // if you add any static files later
+
+// 1. Session MUST come BEFORE passport
 app.use(session({
   secret: 'student-manager-secret-2025',
   resave: false,
@@ -44,12 +41,21 @@ app.use(session({
   cookie: { maxAge: 24 * 60 * 60 * 1000 }
 }));
 
-// Auth middleware
+// 2. Then passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+// ==================== MODELS ====================
+const User = require('./models/User');
+const Student = require('./models/Student');
+
+// ==================== AUTH MIDDLEWARE ====================
 const isAuthenticated = (req, res, next) => {
-  if (req.session.username) return next();
+  if (req.session.username || req.isAuthenticated()) return next();
   res.redirect('/login');
 };
-// ======================== FACEBOOK AUTH ========================
+
+// ==================== FACEBOOK AUTH ROUTES ====================
 app.get('/auth/facebook',
   passport.authenticate('facebook', { scope: ['email'] })
 );
@@ -57,11 +63,12 @@ app.get('/auth/facebook',
 app.get('/auth/facebook/callback',
   passport.authenticate('facebook', { failureRedirect: '/login' }),
   (req, res) => {
-    req.session.username = req.user.username; // Keep your old session compatible
+    req.session.username = req.user.username;  // Keep compatibility with your old code
     res.redirect('/students');
   }
 );
-// ======================== AUTH ROUTES ========================
+
+// ==================== LOCAL AUTH ROUTES ====================
 app.get('/login', (req, res) => res.render('login', { error: null }));
 
 app.post('/login', async (req, res) => {
@@ -97,12 +104,15 @@ app.post('/signup', async (req, res) => {
 
 app.get('/logout', (req, res) => {
   req.session.destroy();
+  req.logout(() => {}); // Clear passport session too
   res.redirect('/login');
 });
 
-app.get('/', (req, res) => req.session.username ? res.redirect('/students') : res.redirect('/login'));
+app.get('/', (req, res) => 
+  req.session.username || req.isAuthenticated() ? res.redirect('/students') : res.redirect('/login')
+);
 
-// ======================== CRUD WEB PAGES (Protected) ========================
+// ==================== CRUD ROUTES (Protected) ====================
 app.get('/students', isAuthenticated, async (req, res) => {
   let query = {};
   if (req.query.name) query.name = { $regex: req.query.name, $options: 'i' };
@@ -112,9 +122,12 @@ app.get('/students', isAuthenticated, async (req, res) => {
     if (req.query.minAge) query.age.$gte = Number(req.query.minAge);
     if (req.query.maxAge) query.age.$lte = Number(req.query.maxAge);
   }
-
   const students = await Student.find(query);
-  res.render('index', { students, query: req.query, username: req.session.username });
+  res.render('index', { 
+    students, 
+    query: req.query, 
+    username: req.session.username || req.user?.username 
+  });
 });
 
 app.get('/students/new', isAuthenticated, (req, res) => res.render('new'));
@@ -138,7 +151,7 @@ app.delete('/students/:id', isAuthenticated, async (req, res) => {
   res.redirect('/students');
 });
 
-// ======================== RESTful APIs (Public) ========================
+// ==================== RESTful API (Public) ====================
 app.get('/api/students', async (req, res) => res.json(await Student.find()));
 app.get('/api/students/:id', async (req, res) => {
   const s = await Student.findById(req.params.id);
@@ -154,9 +167,9 @@ app.delete('/api/students/:id', async (req, res) => {
   s ? res.json({ message: 'Deleted' }) : res.status(404).json({ error: 'Not found' });
 });
 
-// ======================== START SERVER ========================
+// ==================== START SERVER ====================
 app.listen(PORT, () => {
   console.log(`Student Manager is running!`);
   console.log(`Local: http://localhost:${PORT}`);
-  console.log(`After deploy → your Render/Railway URL`);
+  console.log(`Deployed: https://s381-kvzy.onrender.com`);
 });
