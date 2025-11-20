@@ -19,5 +19,6 @@
   },
   "author": "Group 4 - COMPS381F",
   "license": "MIT",
-  "type": "web"                     // ← ADD THIS LINE (important for Render)
+  "type": "web"                    
 }
+
