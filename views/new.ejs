@@ -8,10 +8,12 @@
   <style>
     .form-label small { color: #6c757d; }
     .text-danger { font-size: 0.9em; }
+    body { position: relative; min-height: 100vh; }
   </style>
 </head>
 <body class="bg-light">
-  <div class="container mt-5">
+
+  <div class="container mt-5 pb-5">
     <div class="row justify-content-center">
       <div class="col-md-7">
         <div class="card shadow-lg border-0">
@@ -20,7 +22,6 @@
           </div>
           <div class="card-body p-4">
 
-            <!-- Error Message -->
             <% if (typeof error !== 'undefined' && error) { %>
               <div class="alert alert-danger alert-dismissible fade show">
                 <strong>Error:</strong> <%= error %>
@@ -31,110 +32,90 @@
             <form action="/students" method="POST">
               <!-- Name -->
               <div class="mb-4">
-                <label class="form-label fw-bold">
-                  Full Name <span class="text-danger">*</span>
-                </label>
-                <input type="text" name="name" class="form-control form-control-lg" 
+                <label class="form-label fw-bold">Full Name <span class="text-danger">*</span></label>
+                <input type="text" name="name" class="form-control form-control-lg"
                        placeholder="e.g. Chan Tai Man" required minlength="2" maxlength="50">
                 <small>Must be real name (2–50 characters)</small>
               </div>
 
               <!-- Student ID -->
               <div class="mb-4">
-                <label class="form-label fw-bold">
-                  Student ID <span class="text-danger">*</span>
-                </label>
-                <input type="text" name="studentId" class="form-control form-control-lg" 
-                       placeholder="e.g. 21012345" required pattern="[0-9]{8,10}" title="8–10 digits only">
-                <small>Must be 8–10 digits (e.g. 21012345)</small>
+                <label class="form-label fw-bold">Student ID <span class="text-danger">*</span></label>
+                <input type="text" name="studentId" class="form-control form-control-lg"
+                       placeholder="e.g. 21012345" required pattern="[0-9]{8,10}">
+                <small>Must be 8–10 digits only</small>
               </div>
 
               <!-- Age -->
               <div class="mb-4">
-                <label class="form-label fw-bold">
-                  Age <span class="text-danger">*</span>
-                </label>
-                <input type="number" name="age" class="form-control form-control-lg" 
+                <label class="form-label fw-bold">Age <span class="text-danger">*</span></label>
+                <input type="number" name="age" class="form-control form-control-lg"
                        placeholder="18" required min="17" max="100">
-                <small>Minimum 17 years old (university student)</small>
+                <small>Minimum 17 years old</small>
               </div>
 
               <!-- Major -->
               <div class="mb-4">
-                <label class="form-label fw-bold">
-                  Major / Programme <span class="text-danger">*</span>
-                </label>
+                <label class="form-label fw-bold">Major / Programme <span class="text-danger">*</span></label>
                 <select name="major" class="form-select form-select-lg" required>
                   <option value="" disabled selected>Select your major</option>
-                  <option value="Computer Science">Computer Science</option>
-                  <option value="Information Technology">Information Technology</option>
-                  <option value="Business Administration">Business Administration</option>
-                  <option value="Engineering">Engineering</option>
-                  <option value="Nursing">Nursing</option>
-                  <option value="Design">Design</option>
-                  <option value="Psychology">Psychology</option>
-                  <option value="Other">Other</option>
+                  <option>Computer Science</option>
+                  <option>Information Technology</option>
+                  <option>Business Administration</option>
+                  <option>Engineering</option>
+                  <option>Nursing</option>
+                  <option>Design</option>
+                  <option>Psychology</option>
+                  <option>Other</option>
                 </select>
-                <small>Choose your current programme</small>
               </div>
 
-              <!-- Buttons -->
               <div class="d-grid d-md-flex justify-content-end gap-3">
-                <a href="/students" class="btn btn-secondary btn-lg">
-                  Cancel
-                </a>
-                <button type="submit" class="btn btn-success btn-lg px-5">
-                  Create Student
-                </button>
+                <a href="/students" class="btn btn-secondary btn-lg">Cancel</a>
+                <button type="submit" class="btn btn-success btn-lg px-5">Create Student</button>
               </div>
             </form>
           </div>
         </div>
-
         <div class="text-center mt-4 text-muted small">
-          <i class="bi bi-shield-lock"></i> All data is securely stored
+          All data is securely stored
         </div>
       </div>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-
-
-
-
-
-
-<!-- Cookie Consent Banner - Works 100% on Render (no layout needed) -->
-<div id="cookieBanner" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#1e40af; color:white; padding:16px 24px; border-radius:16px; box-shadow:0 12px 40px rgba(0,0,0,0.4); z-index:9999; max-width:440px; width:calc(100% - 40px); font-family:system-ui,sans-serif;">
-  <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:15px;">
-    <div>
-      <strong>We use cookies</strong><br>
-      <small style="opacity:0.9;">For secure login and session management</small>
-    </div>
-    <div>
-      <button onclick="localStorage.setItem('cookieConsent','accepted');this.parentElement.parentElement.parentElement.style.display='none'" 
-              class="btn btn-light btn-sm">Accept</button>
-      <button onclick="localStorage.setItem('cookieConsent','declined');this.parentElement.parentElement.parentElement.style.display='none'" 
-              class="btn btn-outline-light btn-sm ms-2">Decline</button>
+  <!-- COOKIE BANNER - FIXED & ALWAYS VISIBLE UNTIL CLICKED -->
+  <div id="cookieBanner" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); 
+       background:#1e40af; color:white; padding:18px 24px; border-radius:16px; box-shadow:0 12px 40px rgba(0,0,0,0.4); 
+       z-index:9999; max-width:460px; width:calc(100% - 40px); font-family:system-ui,sans-serif; text-align:center;">
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:15px;">
+      <div style="text-align:left;">
+        <strong>We use cookies</strong><br>
+        <small style="opacity:0.9;">For secure login and session management</small>
+      </div>
+      <div>
+        <button onclick="acceptCookies()" class="btn btn-light btn-sm">Accept</button>
+        <button onclick="declineCookies()" class="btn btn-outline-light btn-sm ms-2">Decline</button>
+      </div>
     </div>
   </div>
-</div>
 
-<script>
-  if (!localStorage.getItem('cookieConsent')) {
-    document.getElementById('cookieBanner').style.display = 'block';
-  }
-</script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Show banner if user hasn't decided yet
+    if (!localStorage.getItem('cookieConsent')) {
+      document.getElementById('cookieBanner').style.display = 'block';
+    }
 
+    function acceptCookies() {
+      localStorage.setItem('cookieConsent', 'accepted');
+      document.getElementById('cookieBanner').style.display = 'none';
+    }
 
-
-
-
-
-
-
+    function declineCookies() {
+      localStorage.setItem('cookieConsent', 'declined');
+      document.getElementById('cookieBanner').style.display = 'none';
+    }
+  </script>
 </body>
 </html>
-
