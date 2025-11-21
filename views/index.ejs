@@ -2,161 +2,117 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Student Manager</title>
+  <title>Student List</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <style>
+    body { background: #f8f9fa; min-height: 100vh; }
+    .table th { background-color: #0d6efd; color: white; }
+  </style>
 </head>
-
-
-
-
-
-<!-- Cookie Consent Banner - Works 100% on Render (no layout needed) -->
-<div id="cookieBanner" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#1e40af; color:white; padding:16px 24px; border-radius:16px; box-shadow:0 12px 40px rgba(0,0,0,0.4); z-index:9999; max-width:440px; width:calc(100% - 40px); font-family:system-ui,sans-serif;">
-  <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:15px;">
-    <div>
-      <strong>We use cookies</strong><br>
-      <small style="opacity:0.9;">For secure login and session management</small>
-    </div>
-    <div>
-      <button onclick="localStorage.setItem('cookieConsent','accepted');this.parentElement.parentElement.parentElement.style.display='none'" 
-              class="btn btn-light btn-sm">Accept</button>
-      <button onclick="localStorage.setItem('cookieConsent','declined');this.parentElement.parentElement.parentElement.style.display='none'" 
-              class="btn btn-outline-light btn-sm ms-2">Decline</button>
-    </div>
-  </div>
-</div>
-
-<script>
-  if (!localStorage.getItem('cookieConsent')) {
-    document.getElementById('cookieBanner').style.display = 'block';
-  }
-</script>
-
-
-
-
-
-
-<script>
-  // Show banner only if user hasn't decided
-  if (!localStorage.getItem('cookieConsent')) {
-    document.getElementById('cookieBanner').style.display = 'block';
-  }
-  function acceptCookies() {
-    localStorage.setItem('cookieConsent', 'accepted');
-    document.getElementById('cookieBanner').style.display = 'none';
-  }
-  function declineCookies() {
-    localStorage.setItem('cookieConsent', 'declined');
-    document.getElementById('cookieBanner').style.display = 'none';
-  }
-</script>
-
-
-
-
-
-
-<body class="bg-light">
-  <div class="container mt-4">
+<body>
+  <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h1>Welcome, <%= username %>!</h1>
-      <a href="/logout" class="btn btn-outline-danger">Logout</a>
+      <h1 class="h3 fw-bold">Student List</h1>
+      <div>
+        <a href="/students/new" class="btn btn-success me-2">Add New Student</a>
+        <a href="/logout" class="btn btn-outline-danger">Logout</a>
+      </div>
     </div>
 
-    <a href="/students/new" class="btn btn-success mb-3">Create New Student</a>
+    <!-- SEARCH FORM + GENDER + BACK TO ALL BUTTON -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <form action="/students" method="GET" class="row g-3">
+          <div class="col-md-3">
+            <input type="text" name="name" class="form-control" placeholder="Search by name" value="<%= query.name || '' %>">
+          </div>
+          <div class="col-md-3">
+            <input type="text" name="major" class="form-control" placeholder="Search by major" value="<%= query.major || '' %>">
+          </div>
+          <div class="col-md-2">
+            <input type="number" name="minAge" class="form-control" placeholder="Min Age" value="<%= query.minAge || '' %>">
+          </div>
+          <div class="col-md-2">
+            <input type="number" name="maxAge" class="form-control" placeholder="Max Age" value="<%= query.maxAge || '' %>">
+          </div>
+          <div class="col-md-2">
+            <select name="gender" class="form-select">
+              <option value="">All Gender</option>
+              <option value="Male" <%= query.gender === 'Male' ? 'selected' : '' %>>Male</option>
+              <option value="Female" <%= query.gender === 'Female' ? 'selected' : '' %>>Female</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <button type="submit" class="btn btn-primary me-2">Search</button>
+            <a href="/students" class="btn btn-outline-secondary">All Students</a>
+          </div>
+        </form>
+      </div>
+    </div>
 
-    <!-- Search Form (NOW SAFE) -->
-    <form action="/students" method="get" class="row g-2 mb-4">
-      <div class="col-md-3">
-        <input type="text" name="name" placeholder="Name" 
-               value="<%= query && query.name ? query.name : '' %>" class="form-control">
+    <!-- STUDENT TABLE WITH GENDER COLUMN -->
+    <div class="card shadow">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Student ID</th>
+                <th>Age</th>
+                <th>Gender</th>
+                <th>Major</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (students.length === 0) { %>
+                <tr>
+                  <td colspan="6" class="text-center py-4 text-muted">No students found</td>
+                </tr>
+             (ab) <% } else { %>
+                <% students.forEach(student => { %>
+                  <tr>
+                    <td><strong><%= student.name %></strong></td>
+                    <td><%= student.studentId %></td>
+                    <td><%= student.age %></td>
+                    <td>
+                      <span class="badge <%= student.gender === 'Male' ? 'bg-primary' : 'bg-danger' %>">
+                        <%= student.gender || '—' %>
+                      </span>
+                    </td>
+                    <td><%= student.major %></td>
+                    <td>
+                      <a href="/students/<%= student._id %>/edit" class="btn btn-warning btn-sm">Edit</a>
+                      <form action="/students/<%= student._id %>?_method=DELETE" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this student?')">Delete</button>
+                      </form>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
       </div>
-      <div class="col-md-3">
-        <input type="text" name="major" placeholder="Major" 
-               value="<%= query && query.major ? query.major : '' %>" class="form-control">
-      </div>
-      <div class="col-md-2">
-        <input type="number" name="minAge" placeholder="Min Age" 
-               value="<%= query && query.minAge ? query.minAge : '' %>" class="form-control">
-      </div>
-      <div class="col-md-2">
-        <input type="number" name="maxAge" placeholder="Max Age" 
-               value="<%= query && query.maxAge ? query.maxAge : '' %>" class="form-control">
-      </div>
-      <div class="col-md-2">
-        <button type="submit" class="btn btn-primary w-100">Search</button>
-      </div>
-    </form>
-
-    <table class="table table-hover">
-      <thead class="table-dark">
-        <tr>
-          <th>Name</th>
-          <th>Student ID</th>
-          <th>Age</th>
-          <th>Major</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (students.length === 0) { %>
-          <tr><td colspan="5" class="text-center text-muted">No students found</td></tr>
-        <% } else { %>
-          <% students.forEach(s => { %>
-            <tr>
-              <td><%= s.name %></td>
-              <td><%= s.studentId %></td>
-              <td><%= s.age %></td>
-              <td><%= s.major %></td>
-              <td>
-                <a href="/students/<%= s._id %>/edit" class="btn btn-sm btn-warning">Edit</a>
-                <form action="/students/<%= s._id %>?_method=DELETE" method="POST" style="display:inline;">
-                  <button type="submit" class="btn btn-sm btn-danger" 
-                          onclick="return confirm('Delete <%= s.name %>?')">Delete</button>
-                </form>
-              </td>
-            </tr>
-          <% }) %>
-        <% } %>
-      </tbody>
-    </table>
+    </div>
   </div>
 
-
-
-
-
-
-<!-- Cookie Consent Banner - Works 100% on Render (no layout needed) -->
-<div id="cookieBanner" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#1e40af; color:white; padding:16px 24px; border-radius:16px; box-shadow:0 12px 40px rgba(0,0,0,0.4); z-index:9999; max-width:440px; width:calc(100% - 40px); font-family:system-ui,sans-serif;">
-  <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:15px;">
-    <div>
-      <strong>We use cookies</strong><br>
-      <small style="opacity:0.9;">For secure login and session management</small>
-    </div>
-    <div>
-      <button onclick="localStorage.setItem('cookieConsent','accepted');this.parentElement.parentElement.parentElement.style.display='none'" 
-              class="btn btn-light btn-sm">Accept</button>
-      <button onclick="localStorage.setItem('cookieConsent','declined');this.parentElement.parentElement.parentElement.style.display='none'" 
-              class="btn btn-outline-light btn-sm ms-2">Decline</button>
+  <!-- Cookie Banner -->
+  <div id="cookieBanner" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#1e40af; color:white; padding:20px 28px; border-radius:16px; box-shadow:0 15px 40px rgba(0,0,0,0.5); z-index:9999; max-width:520px; width:calc(100% - 40px); font-family:system-ui,sans-serif;">
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:15px;">
+      <div><strong>We use cookies</strong><br><small>For secure login</small></div>
+      <button onclick="localStorage.setItem('cookieConsent','accepted');this.parentElement.parentElement.style.display='none'" 
+              class="btn btn-light btn-sm fw-bold">Accept</button>
     </div>
   </div>
-</div>
 
-<script>
-  if (!localStorage.getItem('cookieConsent')) {
-    document.getElementById('cookieBanner').style.display = 'block';
-  }
-</script>
-
-
-
-
-
-
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    if (!localStorage.getItem('cookieConsent')) {
+      document.getElementBy button('cookieBanner').style.display = 'block';
+    }
+  </script>
 </body>
 </html>
-
-
-
