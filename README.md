@@ -5,7 +5,7 @@
 - **Course**: COMPS381F – Web Programming & Security
 - **Group Number**: Group 4
 - **Members**:
-  - Wong Yan Ho (SID: 1367915)
+  - Wong Yan Ho (SID 13679156)
   - Kwan Wai Lam (SID 13701745)
   - Wu Yu Hei (SID 13024164)
   - Li Lok Yiu (SID 13512448)
