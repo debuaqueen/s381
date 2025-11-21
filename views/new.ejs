@@ -38,15 +38,15 @@
 
             <form action="/students" method="POST">
 
-              <!-- Full Name
+              <!-- 1. FULL NAME (WAS MISSING!) -->
               <div class="mb-4">
                 <label class="form-label fw-bold">Full Name <span class="text-danger">*</span></label>
                 <input type="text" name="name" class="form-control form-control-lg"
-                       placeholder="e.g. Chan Tai Man" required minlength="2" maxlength="50" required>
+                       placeholder="e.g. Chan Tai Man" required minlength="2" maxlength="50">
                 <small class="text-muted">Must be 2–50 characters</small>
               </div>
 
-              <!-- Student ID -->
+              <!-- 2. STUDENT ID -->
               <div class="mb-4">
                 <label class="form-label fw-bold">Student ID <span class="text-danger">*</span></label>
                 <input type="text" name="studentId" class="form-control form-control-lg"
@@ -54,7 +54,7 @@
                 <small class="text-muted">Must be 8–10 digits only</small>
               </div>
 
-              <!-- GENDER - CORRECT FOR NEW PAGE -->
+              <!-- 3. GENDER -->
               <div class="mb-4">
                 <label class="form-label fw-bold">Gender <span class="text-danger">*</span></label>
                 <select name="gender" class="form-select form-control-lg" required>
@@ -64,7 +64,7 @@
                 </select>
               </div>
 
-              <!-- Age -->
+              <!-- 4. AGE -->
               <div class="mb-4">
                 <label class="form-label fw-bold">Age <span class="text-danger">*</span></label>
                 <input type="number" name="age" class="form-control form-control-lg"
@@ -72,7 +72,7 @@
                 <small class="text-muted">Must be 17 or older</small>
               </div>
 
-              <!-- Major -->
+              <!-- 5. MAJOR -->
               <div class="mb-4">
                 <label class="form-label fw-bold">Major / Programme <span class="text-danger">*</span></label>
                 <select name="major" class="form-select form-control-lg" required>
@@ -88,7 +88,7 @@
                 </select>
               </div>
 
-              <!-- Buttons -->
+              <!-- BUTTONS -->
               <div class="d-flex justify-content-end gap-3 mt-5">
                 <a href="/students" class="btn btn-secondary btn-lg px-4">Cancel</a>
                 <button type="submit" class="btn btn-success btn-lg px-5 fw-bold">Create Student</button>
