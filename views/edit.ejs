@@ -17,6 +17,22 @@
         <label>Student ID</label>
         <input type="text" name="studentId" value="<%= student.studentId %>" class="form-control" required>
       </div>
+
+
+
+<div class="mb-4">
+  <label class="form-label fw-bold">Gender <span class="text-danger">*</span></label>
+  <select name="gender" class="form-select form-control-lg" required>
+    <option value="" disabled <%= !student ? 'selected' : '' %>>Select gender</option>
+    <option value="Male" <%= student && student.gender === 'Male' ? 'selected' : '' %>>Male</option>
+    <option value="Female" <%= student && student.gender === 'Female' ? 'selected' : '' %>>Female</option>
+  </select>
+</div>
+
+
+
+
+
       <div class="mb-3">
         <label>Age (17–100)</label>
         <input type="number" name="age" value="<%= student.age %>" class="form-control" required min="17" max="100">
@@ -31,3 +47,4 @@
   </div>
 </body>
 </html>
+
