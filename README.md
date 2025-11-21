@@ -48,26 +48,38 @@ After login → go to: https://s381-kvzy.onrender.com/students
 ### 6. RESTful API – Test in Any Terminal (Linux/macOS/Windows WSL/PowerShell)
 **No login required** — directly testable!
 
-# 1. Get all students
-curl https://s381-kvzy.onrender.com/api/students
-
-# 2. Get one student (LIVE SAMPLE)
+# READ
 curl https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a
 
-# 3. Update student (example: change age)
+# UPDATE age
 curl -X PUT https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a \
   -H "Content-Type: application/json" \
-  -d '{"age": 21}'
+  -d '{"age": 22}'
 
-# 4. Update major
+# UPDATE major
 curl -X PUT https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a \
   -H "Content-Type: application/json" \
   -d '{"major": "Computer Science"}'
 
-# 5. Create new student
+# DELETE
+curl -X DELETE https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a
+
+# CREATE new
 curl -X POST https://s381-kvzy.onrender.com/api/students \
   -H "Content-Type: application/json" \
-  -d '{"name":"CHAN Tai Man","studentId":"21098765","age":22,"gender":"Male","major":"Information Technology"}'
+  -d '{"name":"WONG Siu Ming","studentId":"22012345","age":19,"gender":"Female","major":"Nursing"}'
 
-# 6. Delete student
-curl -X DELETE https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a
+
+
+  1. READ – Get this student (WORKS EVERYWHERE)
+cmdcurl https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a
+2. UPDATE – Change age to 22 (Windows CMD – ONE LINE)
+cmdcurl -X PUT https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a -H "Content-Type: application/json" -d "{\"age\": 22}"
+3. UPDATE – Change major to Computer Science (Windows CMD – ONE LINE)
+cmdcurl -X PUT https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a -H "Content-Type: application/json" -d "{\"major\": \"Computer Science\"}"
+4. UPDATE – Full update (name + major) (Windows CMD – ONE LINE)
+cmdcurl -X PUT https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a -H "Content-Type: application/json" -d "{\"name\": \"NGAI Tin Yan\", \"major\": \"Information Technology\"}"
+5. DELETE – Remove this student (Windows CMD – ONE LINE)
+cmdcurl -X DELETE https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a
+6. CREATE – Add a new student (Windows CMD – ONE LINE)
+cmdcurl -X POST https://s381-kvzy.onrender.com/api/students -H "Content-Type: application/json" -d "{\"name
