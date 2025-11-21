@@ -32,18 +32,18 @@ app.use(require('express-session')({
 const User = require('./models/User');
 const Student = require('./models/Student');
 
-// ==================== Create Admin Setup ====================
+// ==================== Create Admin ====================
 User.findOne({ username: 'admin' }).then(user => {
   if (!user) {
     bcrypt.hash('admin123', 10).then(hash => {
       new User({ username: 'admin', password: hash }).save()
-        .then(() => console.log('Admin created → username: admin | password: admin123'))
+        .then(() => console.log('Admin created: admin / admin123'))
         .catch(() => {});
     });
   }
 });
 
-// ==================== Auth Middleware ====================
+// ==================== Auth ====================
 const isAuth = (req, res, next) => {
   if (req.session?.loggedin) return next();
   res.redirect('/login');
@@ -72,7 +72,7 @@ app.get('/logout', (req, res) => {
   req.session.destroy(() => res.redirect('/login'));
 });
 
-// Forgot Password
+// Forgot Password (unchanged)
 app.get('/forgot-password', (req, res) => res.render('forgot-password', { error: null }));
 app.post('/forgot-password', async (req, res) => {
   const user = await User.findOne({ username: req.body.username });
@@ -91,42 +91,51 @@ app.post('/set-new-password', async (req, res) => {
   res.render('set-new-password', { username: req.body.username, error: null, success: 'Password changed successfully!' });
 });
 
-// ==================== STUDENT CRUD ====================
-
-// List + Search
+// ==================== STUDENT LIST + SEARCH (WITH GENDER!) ====================
 app.get('/students', isAuth, async (req, res) => {
   const query = req.query;
   let filter = {};
+
   if (query.name) filter.name = { $regex: query.name, $options: 'i' };
   if (query.major) filter.major = { $regex: query.major, $options: 'i' };
+  if (query.gender && query.gender !== '') filter.gender = query.gender; // NEW: Gender search
   if (query.minAge) filter.age = { ...filter.age, $gte: Number(query.minAge) };
   if (query.maxAge) filter.age = { ...filter.age, $lte: Number(query.maxAge) };
 
-  const students = await Student.find(filter);
-  res.render('index', { students, username: req.session.username, query, error: null });
+  const students = await Student.find(filter).sort({ name: 1 });
+
+  res.render('index', {
+    students,
+    username: req.session.username,
+    query,     // ← Important: pass query back to keep search values
+    error: null
+  });
 });
 
-// Create - GET
+// ==================== CREATE STUDENT ====================
 app.get('/students/new', isAuth, (req, res) => {
-  res.render('new', { error: null });  // ← CRITICAL: prevents "error not defined"
+  res.render('new', { error: null });
 });
 
-// Create - POST
 app.post('/students', isAuth, async (req, res) => {
-  const { name, studentId, age, major } = req.body;
+  const { name, studentId, age, major, gender } = req.body;
 
-  if (!name || !studentId || !age || !major) {
+  // Validation
+  if (!name || !studentId || !age || !major || !gender) {
     return res.render('new', { error: 'All fields are required!' });
   }
-  if (typeof name !== 'string' || name.trim().length < 2 || name.trim().length > 50) {
+  if (name.trim().length < 2 || name.trim().length > 50) {
     return res.render('new', { error: 'Name must be 2–50 characters' });
   }
   if (!/^\d{8,10}$/.test(studentId.trim())) {
-    return res.render('new', { error: 'Student ID must be 8–10 digits only' });
+    return res.render('new', { error: 'Student ID must be 8–10 digits' });
   }
   const ageNum = Number(age);
   if (isNaN(ageNum) || ageNum < 17 || ageNum > 100) {
-    return res.render('new', { error: 'Age must be between 17 and 100' });
+    return res.render('new', { error: 'Age must be 17–100' });
+  }
+  if (!['Male', 'Female'].includes(gender)) {
+    return res.render('new', { error: 'Please select a valid gender' });
   }
 
   try {
@@ -134,7 +143,8 @@ app.post('/students', isAuth, async (req, res) => {
       name: name.trim(),
       studentId: studentId.trim(),
       age: ageNum,
-      major: major.trim()
+      major: major.trim(),
+      gender: gender  // ← Save gender
     });
     res.redirect('/students');
   } catch (err) {
@@ -145,7 +155,7 @@ app.post('/students', isAuth, async (req, res) => {
   }
 });
 
-// Edit - GET
+// ==================== EDIT STUDENT ====================
 app.get('/students/:id/edit', isAuth, async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
@@ -156,11 +166,10 @@ app.get('/students/:id/edit', isAuth, async (req, res) => {
   }
 });
 
-// Edit - PUT
 app.put('/students/:id', isAuth, async (req, res) => {
-  const { name, studentId, age, major } = req.body;
+  const { name, studentId, age, major, gender } = req.body;
 
-  if (!name || !studentId || !age || !major) {
+  if (!name || !studentId || !age || !major || !gender) {
     const student = await Student.findById(req.params.id);
     return res.render('edit', { student, error: 'All fields are required!' });
   }
@@ -175,7 +184,8 @@ app.put('/students/:id', isAuth, async (req, res) => {
       name: name.trim(),
       studentId: studentId.trim(),
       age: ageNum,
-      major: major.trim()
+      major: major.trim(),
+      gender: gender
     });
     res.redirect('/students');
   } catch (err) {
@@ -187,7 +197,7 @@ app.put('/students/:id', isAuth, async (req, res) => {
   }
 });
 
-// Delete
+// ==================== DELETE ====================
 app.delete('/students/:id', isAuth, async (req, res) => {
   await Student.findByIdAndDelete(req.params.id);
   res.redirect('/students');
@@ -203,9 +213,9 @@ app.post('/api/students', async (req, res) => {
   }
 });
 
-// ==================== Start ====================
+// ==================== Start Server ====================
 app.listen(PORT, '0.0.0.0', () => {
   console.log('Student Manager RUNNING!');
-  console.log(`Local: http://localhost:${PORT}`);
-  console.log(`Render: https://s381-kvzy.onrender.com`);
+  console.log(`Local → http://localhost:${PORT}`);
+  console.log(`Render → https://s381-kvzy.onrender.com`);
 });
