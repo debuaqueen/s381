@@ -52,7 +52,7 @@ const isAuth = (req, res, next) => {
 // ==================== Routes ====================
 app.get('/', (req, res) => res.redirect(req.session?.loggedin ? '/students' : '/login'));
 
-// Login
+// Login Routes
 app.get('/login', (req, res) => res.render('login', { error: null }));
 app.post('/login', async (req, res) => {
   try {
@@ -67,12 +67,11 @@ app.post('/login', async (req, res) => {
     res.render('login', { error: 'Server error' });
   }
 });
-
 app.get('/logout', (req, res) => {
   req.session.destroy(() => res.redirect('/login'));
 });
 
-// Forgot Password (unchanged)
+// Forgot Password
 app.get('/forgot-password', (req, res) => res.render('forgot-password', { error: null }));
 app.post('/forgot-password', async (req, res) => {
   const user = await User.findOne({ username: req.body.username });
@@ -91,52 +90,28 @@ app.post('/set-new-password', async (req, res) => {
   res.render('set-new-password', { username: req.body.username, error: null, success: 'Password changed successfully!' });
 });
 
-// ==================== STUDENT LIST + SEARCH (WITH GENDER!) ====================
+// ==================== STUDENT CRUD (Web) ====================
 app.get('/students', isAuth, async (req, res) => {
   const query = req.query;
   let filter = {};
-
   if (query.name) filter.name = { $regex: query.name, $options: 'i' };
   if (query.major) filter.major = { $regex: query.major, $options: 'i' };
-  if (query.gender && query.gender !== '') filter.gender = query.gender; // NEW: Gender search
+  if (query.gender && query.gender !== '') filter.gender = query.gender;
   if (query.minAge) filter.age = { ...filter.age, $gte: Number(query.minAge) };
   if (query.maxAge) filter.age = { ...filter.age, $lte: Number(query.maxAge) };
 
   const students = await Student.find(filter).sort({ name: 1 });
-
-  res.render('index', {
-    students,
-    username: req.session.username,
-    query,     // ← Important: pass query back to keep search values
-    error: null
-  });
+  res.render('index', { students, username: req.session.username, query });
 });
 
-// ==================== CREATE STUDENT ====================
-app.get('/students/new', isAuth, (req, res) => {
-  res.render('new', { error: null });
-});
-
+app.get('/students/new', isAuth, (req, res) => res.render('new', { error: null }));
 app.post('/students', isAuth, async (req, res) => {
   const { name, studentId, age, major, gender } = req.body;
-
-  // Validation
-  if (!name || !studentId || !age || !major || !gender) {
-    return res.render('new', { error: 'All fields are required!' });
-  }
-  if (name.trim().length < 2 || name.trim().length > 50) {
-    return res.render('new', { error: 'Name must be 2–50 characters' });
-  }
-  if (!/^\d{8,10}$/.test(studentId.trim())) {
-    return res.render('new', { error: 'Student ID must be 8–10 digits' });
-  }
+  if (!name || !studentId || !age || !major || !gender) return res.render('new', { error: 'All fields required!' });
+  if (!/^\d{8,10}$/.test(studentId.trim())) return res.render('new', { error: 'Invalid Student ID' });
   const ageNum = Number(age);
-  if (isNaN(ageNum) || ageNum < 17 || ageNum > 100) {
-    return res.render('new', { error: 'Age must be 17–100' });
-  }
-  if (!['Male', 'Female'].includes(gender)) {
-    return res.render('new', { error: 'Please select a valid gender' });
-  }
+  if (ageNum < 17 || ageNum > 100) return res.render('new', { error: 'Age must be 17–100' });
+  if (!['Male', 'Female'].includes(gender)) return res.render('new', { error: 'Invalid gender' });
 
   try {
     await Student.create({
@@ -144,22 +119,18 @@ app.post('/students', isAuth, async (req, res) => {
       studentId: studentId.trim(),
       age: ageNum,
       major: major.trim(),
-      gender: gender  // ← Save gender
+      gender
     });
     res.redirect('/students');
   } catch (err) {
-    if (err.code === 11000) {
-      return res.render('new', { error: 'Student ID already exists!' });
-    }
-    return res.render('new', { error: 'Failed to create student' });
+    res.render('new', { error: err.code === 11000 ? 'Student ID exists!' : 'Create failed' });
   }
 });
 
-// ==================== EDIT STUDENT ====================
 app.get('/students/:id/edit', isAuth, async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
-    if (!student) return res.status(404).send('Student not found');
+    if (!student) return res.status(404).send('Not found');
     res.render('edit', { student, error: null });
   } catch {
     res.redirect('/students');
@@ -168,54 +139,78 @@ app.get('/students/:id/edit', isAuth, async (req, res) => {
 
 app.put('/students/:id', isAuth, async (req, res) => {
   const { name, studentId, age, major, gender } = req.body;
-
-  if (!name || !studentId || !age || !major || !gender) {
-    const student = await Student.findById(req.params.id);
-    return res.render('edit', { student, error: 'All fields are required!' });
-  }
   const ageNum = Number(age);
-  if (isNaN(ageNum) || ageNum < 17 || ageNum > 100) {
-    const student = await Student.findById(req.params.id);
-    return res.render('edit', { student, error: 'Age must be 17–100' });
-  }
-
   try {
     await Student.findByIdAndUpdate(req.params.id, {
       name: name.trim(),
       studentId: studentId.trim(),
       age: ageNum,
       major: major.trim(),
-      gender: gender
+      gender
     });
     res.redirect('/students');
   } catch (err) {
     const student = await Student.findById(req.params.id);
-    if (err.code === 11000) {
-      return res.render('edit', { student, error: 'Student ID already exists!' });
-    }
-    return res.render('edit', { student, error: 'Update failed' });
+    res.render('edit', { student, error: err.code === 11000 ? 'Student ID exists!' : 'Update failed' });
   }
 });
 
-// ==================== DELETE ====================
 app.delete('/students/:id', isAuth, async (req, res) => {
   await Student.findByIdAndDelete(req.params.id);
   res.redirect('/students');
 });
 
-// ==================== API ====================
-app.get('/api/students', async (req, res) => res.json(await Student.find()));
+// ==================== FULL RESTful API (PUBLIC – NO LOGIN!) ====================
+app.get('/api/students', async (req, res) => {
+  try {
+    res.json(await Student.find());
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.get('/api/students/:id', async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id);
+    if (!student) return res.status(404).json({ error: 'Student not found' });
+    res.json(student);
+  } catch (err) {
+    res.status(400).json({ error: 'Invalid ID' });
+  }
+});
+
 app.post('/api/students', async (req, res) => {
   try {
-    res.status(201).json(await Student.create(req.body));
-  } catch (e) {
-    res.status(400).json({ error: e.message });
+    const student = await Student.create(req.body);
+    res.status(201).json(student);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.put('/api/students/:id', async (req, res) => {
+  try {
+    const student = await Student.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    if (!student) return res.status(404).json({ error: 'Student not found' });
+    res.json(student);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.delete('/api/students/:id', async (req, res) => {
+  try {
+    const student = await Student.findByIdAndDelete(req.params.id);
+    if (!student) return res.status(404).json({ error: 'Student not found' });
+    res.json({ message: 'Deleted successfully' });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 });
 
 // ==================== Start Server ====================
 app.listen(PORT, '0.0.0.0', () => {
   console.log('Student Manager RUNNING!');
-  console.log(`Local → http://localhost:${PORT}`);
-  console.log(`Render → https://s381-kvzy.onrender.com`);
+  console.log(`Local: http://localhost:${PORT}`);
+  console.log(`Live: https://s381-kvzy.onrender.com`);
 });
