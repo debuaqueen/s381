@@ -48,28 +48,21 @@ After login → go to: https://s381-kvzy.onrender.com/students
 ### 6. RESTful API – Test in Any Terminal (Linux/macOS/Windows WSL/PowerShell)
 **No login required** — directly testable!
 
-```bash
-# 1. GET all students
+:: TEST 1: Get all students
 curl https://s381-kvzy.onrender.com/api/students
 
-# 2. GET one student by ID
-curl https://s381-kvzy.onrender.com/api/students/692088f8d728262700fd8bf4
+:: TEST 2: Get your golden student 
+curl https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a
 
-# 3. CREATE a new student (POST)
-curl -X POST https://s381-kvzy.onrender.com/api/students \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "CHAN Siu Ming",
-    "studentId": "21098765",
-    "age": 20,
-    "gender": "Male",
-    "major": "Computer Science"
-  }'
+:: TEST 3: Update age to 21
+curl -X PUT https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a ^
+  -H "Content-Type: application/json" ^
+  -d "{\"age\": 21}"
 
-# 4. UPDATE a student (PUT) – example: change age
-curl -X PUT https://s381-kvzy.onrender.com/api/students/692088f8d728262700fd8bf4 \
-  -H "Content-Type: application/json" \
-  -d '{"age": 26, "major": "Engineering"}'
+:: TEST 4: Change major to Computer Science
+curl -X PUT https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a ^
+  -H "Content-Type: application/json" ^
+  -d "{\"major\": \"Computer Science\"}"
 
-# 5. DELETE a student
-curl -X DELETE https://s381-kvzy.onrender.com/api/students/692088f8d728262700fd8bf4
+:: TEST 5: Delete (optional - only if teacher wants to clean up)
+curl -X DELETE https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a
