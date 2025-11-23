@@ -17,9 +17,7 @@
 - **Forgot Password** flow (professional 3-step reset)
 - **Gender field** (Male/Female) in both Create & Edit forms
 - Clean, responsive UI using **Bootstrap 5 + EJS**
-- Cookie consent banner (GDPR-style)
 - Public **RESTful API** (no auth required – perfect for testing)
-- Auto-creates default admin on first run
 - Deployed on **Render.com** + **MongoDB Atlas**
 
 ### 3. Live Demo (Always Online)
