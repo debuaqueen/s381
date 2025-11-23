@@ -71,15 +71,3 @@ curl -X POST https://s381-kvzy.onrender.com/api/students \
 
 
 
-  1. READ – Get this student (WORKS EVERYWHERE)
-cmdcurl https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a
-2. UPDATE – Change age to 22 (Windows CMD – ONE LINE)
-cmdcurl -X PUT https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a -H "Content-Type: application/json" -d "{\"age\": 22}"
-3. UPDATE – Change major to Computer Science (Windows CMD – ONE LINE)
-cmdcurl -X PUT https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a -H "Content-Type: application/json" -d "{\"major\": \"Computer Science\"}"
-4. UPDATE – Full update (name + major) (Windows CMD – ONE LINE)
-cmdcurl -X PUT https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a -H "Content-Type: application/json" -d "{\"name\": \"NGAI Tin Yan\", \"major\": \"Information Technology\"}"
-5. DELETE – Remove this student (Windows CMD – ONE LINE)
-cmdcurl -X DELETE https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a
-6. CREATE – Add a new student (Windows CMD – ONE LINE)
-cmdcurl -X POST https://s381-kvzy.onrender.com/api/students -H "Content-Type: application/json" -d "{\"name
