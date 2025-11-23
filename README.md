@@ -54,6 +54,13 @@ curl -X PUT https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a
   -H "Content-Type: application/json" \
   -d '{"age": 22}'
 
+
+curl -X PUT https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a \
+  -H "Content-Type: application/json" \
+  -d '{"age": 22}'
+
+  
+
 # UPDATE major
 curl -X PUT https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a \
   -H "Content-Type: application/json" \
