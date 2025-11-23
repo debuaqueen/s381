@@ -13,32 +13,51 @@
       font-family: 'Segoe UI', sans-serif;
     }
     .glass-card {
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(15px);
-      border-radius: 24px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 28px;
+      border: none;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
     }
     .header-glow {
       background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
-      border-radius: 24px 24px 0 0;
-      padding: 2rem;
+      padding: 2.5rem;
+      text-align: center;
     }
-    .form-control, .form-select {
-      background: rgba(255, 255, 255, 0.1) !important;
-      border: 1px solid rgba(255, 255, 255, 0.3) !important;
-      color: white !important;
-      border-radius: 16px !important;
-      padding: 14px !important;
-      font-size: 1.1rem;
-    }
-    .form-control::placeholder {
-      color: rgba(255, 255, 255, 0.7) !important;
+    .text-glow {
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 900;
+      font-size: 2.8rem;
     }
     .form-label {
-      color: white;
+      color: #333 !important;
       font-weight: 600;
       font-size: 1.1rem;
+    }
+    .form-control, .form-select {
+      background: white !important;
+      border: 2px solid #e0e0e0 !important;
+      color: #333 !important;
+      border-radius: 16px !important;
+      padding: 16px !important;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: #667eea !important;
+      box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25) !important;
+    }
+    /* FIXED: Major & Gender dropdowns now SOLID WHITE */
+    .form-select {
+      background-color: white !important;
+      color: #333 !important;
+    }
+    .form-select option {
+      background: white;
+      color: #333;
     }
     .btn-glow {
       transition: all 0.4s ease;
@@ -51,71 +70,63 @@
     }
     .btn-glow:hover {
       transform: translateY(-5px) scale(1.05);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
     }
-    .btn-glow:active::after {
-      content: '';
-      position: absolute;
-      top: 50%; left: 50%;
-      width: 300px; height: 300px;
-      background: rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      transform: translate(-50%, -50%) scale(0);
-      animation: ripple 0.6s ease-out;
+    .btn-success {
+      background: linear-gradient(45deg, #11998e, #38ef7d);
+      border: none;
     }
-    @keyframes ripple {
-      to { transform: translate(-50%, -50%) scale(4); opacity: 0; }
+    .btn-outline-light {
+      border-color: #ddd;
+      color: #333;
     }
-    .text-glow {
-      background: linear-gradient(90deg, #ff9a9e 0%, #fad0c4 99%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      font-weight: 800;
+    small {
+      color: #666 !important;
+    }
+    .footer-text {
+      color: #777;
     }
   </style>
 </head>
-<body class="text-white">
+<body>
 
   <div class="container py-5">
     <div class="row justify-content-center">
       <div class="col-md-8 col-lg-6">
 
-        <!-- MAIN CARD -->
+        <!-- BRIGHT & CLEAN CARD -->
         <div class="glass-card">
 
-          <!-- GLOW HEADER -->
-          <div class="header-glow text-center">
-            <h1 class="display-4 mb-0 text-glow">Add New Student</h1>
+          <!-- GLOWING HEADER -->
+          <div class="header-glow">
+            <h1 class="text-glow">Add New Student</h1>
           </div>
 
           <div class="card-body p-5">
 
-            <!-- ERROR MESSAGE -->
+            <!-- ERROR -->
             <% if (typeof error !== 'undefined' && error) { %>
-              <div class="alert alert-danger bg-danger bg-opacity-20 border-danger text-white border rounded-4 mb-4">
+              <div class="alert alert-danger rounded-4 border-0 mb-4">
                 <strong>Error:</strong> <%= error %>
               </div>
             <% } %>
 
             <form action="/students" method="POST">
 
-              <!-- FULL NAME -->
               <div class="mb-4">
                 <label class="form-label">Full Name <span class="text-danger">*</span></label>
-                <input type="text" name="name" class="form-control form-control-lg" 
+                <input type="text" name="name" class="form-control form-control-lg"
                        placeholder="e.g. Chan Tai Man" required minlength="2" maxlength="50">
-                <small class="text-white-50">Must be 2–50 characters</small>
+                <small>Must be 2–50 characters</small>
               </div>
 
-              <!-- STUDENT ID -->
               <div class="mb-4">
                 <label class="form-label">Student ID <span class="text-danger">*</span></label>
-                <input type="text" name="studentId" class="form-control form-control-lg" 
+                <input type="text" name="studentId" class="form-control form-control-lg"
                        placeholder="e.g. 21012345" required pattern="[0-9]{8,10}">
-                <small class="text-white-50">Must be 8–10 digits only</small>
+                <small>Must be 8–10 digits only</small>
               </div>
 
-              <!-- GENDER -->
               <div class="mb-4">
                 <label class="form-label">Gender <span class="text-danger">*</span></label>
                 <select name="gender" class="form-select form-control-lg" required>
@@ -125,15 +136,13 @@
                 </select>
               </div>
 
-              <!-- AGE -->
               <div class="mb-4">
                 <label class="form-label">Age <span class="text-danger">*</span></label>
-                <input type="number" name="age" class="form-control form-control-lg" 
+                <input type="number" name="age" class="form-control form-control-lg"
                        placeholder="18" required min="17" max="100">
-                <small class="text-white-50">Must be 17 or older</small>
+                <small>Must be 17 or older</small>
               </div>
 
-              <!-- MAJOR -->
               <div class="mb-4">
                 <label class="form-label">Major / Programme <span class="text-danger">*</span></label>
                 <select name="major" class="form-select form-control-lg" required>
@@ -149,9 +158,8 @@
                 </select>
               </div>
 
-              <!-- BUTTONS -->
               <div class="d-flex justify-content-end gap-4 mt-5">
-                <a href="/students" class="btn btn-outline-light btn-lg px-5 btn-glow">
+                <a href="/students" class="btn btn-outline-secondary btn-lg px-5 btn-glow">
                   Cancel
                 </a>
                 <button type="submit" class="btn btn-success btn-lg px-6 btn-glow shadow-lg">
@@ -161,21 +169,20 @@
             </form>
           </div>
 
-          <div class="text-center py-4 text-white-50 small">
+          <div class="text-center py-4 footer-text small">
             All data is securely stored
           </div>
         </div>
-
       </div>
     </div>
   </div>
 
-  <!-- COOKIE BANNER -->
-  <div id="cookieBanner" class="position-fixed bottom-0 start-50 translate-middle-x bg-primary text-white p-4 rounded-4 shadow-lg" 
+  <!-- Cookie Banner -->
+  <div id="cookieBanner" class="position-fixed bottom-0 start-50 translate-middle-x bg-primary text-white p-4 rounded-4 shadow-lg"
        style="display:none; z-index:9999; max-width:500px;">
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div class="d-flex justify-content-between align-items-center gap-3">
       <div><strong>We use cookies</strong><br><small>For secure login & better experience</small></div>
-      <button onclick="localStorage.setItem('cookieConsent','accepted');this.parentElement.parentElement.style.display='none'" 
+      <button onclick="localStorage.setItem('cookieConsent','accepted');this.parentElement.parentElement.style.display='none'"
               class="btn btn-light btn-sm fw-bold">Accept</button>
     </div>
   </div>
