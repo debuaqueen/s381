@@ -2,60 +2,109 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Student List</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <style>
-    body { background: #f8f9fa; min-height: 100vh; }
-    .table th { background-color: #0d6efd; color: white; }
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .header-gradient {
+      background: linear-gradient(120deg, #a18cd1 0%, #fbc2eb 100%);
+      border-radius: 20px 20px 0 0;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .card-main {
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    .table th {
+      background: #6c5ce7;
+      color: white;
+      font-weight: 600;
+    }
+    .badge-male { background: #74b9ff; }
+    .badge-female { background: #fd79a8; }
+    .btn-hover:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+      transition: all 0.3s;
+    }
+    .welcome-text {
+      font-size: 1.8rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, #ffeaa7, #fab1a0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
   </style>
 </head>
-<body>
-  <div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h1 class="h3 fw-bold">Student List</h1>
-      <div>
-        <a href="/students/new" class="btn btn-success me-2">Add New Student</a>
-        <a href="/logout" class="btn btn-outline-danger">Logout</a>
-      </div>
+<body class="text-white">
+
+  <div class="container py-5">
+    <!-- WELCOME HEADER -->
+    <div class="text-center mb-5">
+      <h1 class="welcome-text">
+        Welcome, <%= username %>!
+      </h1>
+      <p class="lead text-light opacity-90">Manage your students with style</p>
     </div>
 
-    <!-- SEARCH FORM + GENDER + BACK TO ALL BUTTON -->
-    <div class="card shadow-sm mb-4">
-      <div class="card-body">
-        <form action="/students" method="GET" class="row g-3">
+    <!-- MAIN CARD -->
+    <div class="card card-main bg-dark bg-opacity-95 text-white">
+      
+      <!-- FANCY HEADER -->
+      <div class="p-4 header-gradient text-dark">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+          <h2 class="mb-0 fw-bold">
+            Student Directory
+          </h2>
+          <div>
+            <a href="/students/new" class="btn btn-light btn-lg btn-hover shadow">
+              Add New Student
+            </a>
+            <a href="/logout" class="btn btn-outline-light btn-lg btn-hover ms-2">
+              Logout
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEARCH BAR -->
+      <div class="card-body bg-dark">
+        <form action="/students" method="GET" class="row g-3 mb-4">
           <div class="col-md-3">
-            <input type="text" name="name" class="form-control" placeholder="Search by name" value="<%= query.name || '' %>">
-          </div>
+            <input type="text" name="name" class="form-control form-control-lg bg-dark text-white border-purple" 
+                   placeholder="Search name..." value="<%= query.name || '' %>">
+         925</div>
           <div class="col-md-3">
-            <input type="text" name="major" class="form-control" placeholder="Search by major" value="<%= query.major || '' %>">
+            <input type="text" name="major" class="form-control form-control-lg bg-dark text-white" 
+                   placeholder="Major..." value="<%= query.major || '' %>">
           </div>
           <div class="col-md-2">
-            <input type="number" name="minAge" class="form-control" placeholder="Min Age" value="<%= query.minAge || '' %>">
-          </div>
-          <div class="col-md-2">
-            <input type="number" name="maxAge" class="form-control" placeholder="Max Age" value="<%= query.maxAge || '' %>">
-          </div>
-          <div class="col-md-2">
-            <select name="gender" class="form-select">
+            <select name="gender" class="form-select form-select-lg bg-dark text-white">
               <option value="">All Gender</option>
               <option value="Male" <%= query.gender === 'Male' ? 'selected' : '' %>>Male</option>
               <option value="Female" <%= query.gender === 'Female' ? 'selected' : '' %>>Female</option>
             </select>
           </div>
-          <div class="col-md-3">
-            <button type="submit" class="btn btn-primary me-2">Search</button>
-            <a href="/students" class="btn btn-outline-secondary">All Students</a>
+          <div class="col-md-4 d-flex gap-2">
+            <button type="submit" class="btn btn-primary btn-lg px-4 btn-hover">
+              Search
+            </button>
+            <a href="/students" class="btn btn-outline-warning btn-lg px-4 btn-hover">
+              All Students
+            </a>
           </div>
         </form>
-      </div>
-    </div>
 
-    <!-- STUDENT TABLE WITH GENDER COLUMN -->
-    <div class="card shadow">
-      <div class="card-body">
+        <!-- STUDENT TABLE -->
         <div class="table-responsive">
-          <table class="table table-hover align-middle">
+          <table class="table table-dark table-hover align-middle">
             <thead>
               <tr>
                 <th>Name</th>
@@ -63,30 +112,38 @@
                 <th>Age</th>
                 <th>Gender</th>
                 <th>Major</th>
-                <th>Actions</th>
+                <th class="text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
               <% if (students.length === 0) { %>
                 <tr>
-                  <td colspan="6" class="text-center py-4 text-muted">No students found</td>
+                  <td colspan="6" class="text-center py-5 text-muted">
+                    <h4>No students found</h4>
+                    <a href="/students/new" class="btn btn-success mt-3">Add Your First Student</a>
+                  </td>
                 </tr>
-             (ab) <% } else { %>
+              <% } else { %>
                 <% students.forEach(student => { %>
-                  <tr>
+                  <tr class="table-row-hover">
                     <td><strong><%= student.name %></strong></td>
                     <td><%= student.studentId %></td>
-                    <td><%= student.age %></td>
+                    <td><span class="badge bg-info fs-6"><%= student.age %></span></td>
                     <td>
-                      <span class="badge <%= student.gender === 'Male' ? 'bg-primary' : 'bg-danger' %>">
-                        <%= student.gender || '—' %>
+                      <span class="badge <%= student.gender === 'Male' ? 'badge-male' : 'badge-female' %> fs-6 px-3 py-2">
+                        <%= student.gender %>
                       </span>
                     </td>
                     <td><%= student.major %></td>
-                    <td>
-                      <a href="/students/<%= student._id %>/edit" class="btn btn-warning btn-sm">Edit</a>
+                    <td class="text-center">
+                      <a href="/students/<%= student._id %>/edit" class="btn btn-warning btn-sm btn-hover">
+                        Edit
+                      </a>
                       <form action="/students/<%= student._id %>?_method=DELETE" method="POST" class="d-inline">
-                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this student?')">Delete</button>
+                        <button type="submit" class="btn btn-danger btn-sm btn-hover" 
+                                onclick="return confirm('Delete <%= student.name %>?')">
+                          Delete
+                        </button>
                       </form>
                     </td>
                   </tr>
@@ -96,14 +153,21 @@
           </table>
         </div>
       </div>
+
+      <!-- FOOTER -->
+      <div class="card-footer text-center text-muted bg-black bg-opacity-50">
+        <small>COMPS381F Final Project • Group 4 • November 2025</small>
+      </div>
     </div>
   </div>
 
-  <!-- Cookie Banner -->
-  <div id="cookieBanner" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#1e40af; color:white; padding:20px 28px; border-radius:16px; box-shadow:0 15px 40px rgba(0,0,0,0.5); z-index:9999; max-width:520px; width:calc(100% - 40px); font-family:system-ui,sans-serif;">
+  <!-- Cookie Banner (unchanged) -->
+  <div id="cookieBanner" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+       background:#6c5ce7; color:white; padding:20px 30px; border-radius:16px; box-shadow:0 15px 40px rgba(0,0,0,0.5);
+       z-index:9999; max-width:520px; width:calc(100% - 40px); font-family:system-ui,sans-serif;">
     <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:15px;">
-      <div><strong>We use cookies</strong><br><small>For secure login</small></div>
-      <button onclick="localStorage.setItem('cookieConsent','accepted');this.parentElement.parentElement.style.display='none'" 
+      <div><strong>We use cookies</strong><br><small>For secure login & better experience</small></div>
+      <button onclick="localStorage.setItem('cookieConsent','accepted');this.parentElement.parentElement.style.display='none'"
               class="btn btn-light btn-sm fw-bold">Accept</button>
     </div>
   </div>
@@ -111,7 +175,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     if (!localStorage.getItem('cookieConsent')) {
-      document.getElementBy button('cookieBanner').style.display = 'block';
+      document.getElementById('cookieBanner').style.display = 'block';
     }
   </script>
 </body>
