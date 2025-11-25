@@ -12,7 +12,7 @@
   - Ning Rui Qi (SID 13053319)
 
 ### 2. Key Features (All Working)
-- Full **CRUD** with **search & filter** (by Name, Major, Age range, **Gender**)
+- Full **CRUD** with **search & filter** (by Name, Major, Age range, Gender)
 - Secure **login system** with bcrypt-hashed password
 - **Forgot Password** flow (professional 3-step reset)
 - **Gender field** (Male/Female) in both Create & Edit forms
