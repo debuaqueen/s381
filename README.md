@@ -2,7 +2,7 @@
 
 ### 1. Project Information
 - **Project Name**: Student Manager (Full-Stack Secure CRUD Application)
-- **Course**: COMPS381F – Web Programming & Security
+- **Course**: COMPS381F
 - **Group Number**: Group 4
 - **Members**:
   - Wong Yan Ho (SID 13679156)
