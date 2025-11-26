@@ -43,6 +43,31 @@ After login → go to: https://s381-kvzy.onrender.com/students
 
 ### 6. RESTful API – Test in Any Terminal (Linux/macOS/Windows WSL/PowerShell)
 
+Mongodb data sample:
+{
+  "_id": {
+    "$oid": "691ffc5d3a927d62e0a0424c"
+  },
+  "name": "Li Chi Yan",
+  "studentId": "14014454",
+  "age": 24,
+  "major": "Psychology",
+  "__v": 0,
+  "gender": "Male"
+}
+
+
+{
+  "_id": {
+    "$oid": "691ffc9a3a927d62e0a04250"
+  },
+  "name": "Tsang Hiu Yan",
+  "studentId": "13804575",
+  "age": 20,
+  "major": "Engineering",
+  "__v": 0,
+  "gender": "Female"
+}
 
 # READ student information
 curl https://s381-kvzy.onrender.com/api/students/(student id here)
