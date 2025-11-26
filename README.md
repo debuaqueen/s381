@@ -44,7 +44,7 @@ After login → go to: https://s381-kvzy.onrender.com/students
 ### 6. RESTful API – Test in Any Terminal (Linux/macOS/Windows WSL/PowerShell)
 
 
-# READ
+# READ student information
 curl https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a
 
 # UPDATE age
