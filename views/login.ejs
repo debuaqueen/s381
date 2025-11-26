@@ -3,105 +3,181 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Login - Student Manager</title>
+  <title>Login – Student Manager</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <style>
-    body { 
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-      min-height: 100vh; 
-      font-family: system-ui, -apple-system, sans-serif;
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      align-items: center;
     }
-    .login-card { max-width: 420px; }
-    input[readonly] { background-color: #f8f9fa !important; }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 28px;
+      border: none;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+    }
+    .header-glow {
+      background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+      border-radius: 28px 28px 0 0;
+      padding: 3rem;
+      text-align: center;
+    }
+    .text-glow {
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 900;
+      font-size: 3rem;
+    }
+    .form-control {
+      border-radius: 16px;
+      padding: 16px;
+      font-size: 1.1rem;
+      border: 2px solid #e0e0e0;
+    }
+    .form-control:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+    }
+    .btn-glow {
+      transition: all 0.4s ease;
+      font-weight: 600;
+      border-radius: 16px;
+      padding: 14px 32px;
+      font-size: 1.2rem;
+    }
+    .btn-glow:hover {
+      transform: translateY(-5px) scale(1.05);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    .btn-success {
+      background: linear-gradient(45deg, #11998e, #38ef7d);
+      border: none;
+    }
   </style>
 </head>
-<body class="d-flex align-items-center">
+<body class="text-dark">
 
   <div class="container">
     <div class="row justify-content-center">
-      <div class="col-md-5 login-card">
+      <div class="col-md-8 col-lg-6 col-xl-5">
 
-        <div class="card shadow-lg border-0">
-          <div class="card-header bg-primary text-white text-center py-4">
-            <h2 class="mb-0 fw-bold">Student Manager</h2>
-            <small>COMPS381F • Group 4</small>
+        <!-- LOGIN CARD -->
+        <div class="glass-card overflow-hidden">
+          <div class="header-glow">
+            <h1 class="text-glow">Student Manager</h1>
+            <p class="text-white fs-4 mt-3">Group 4 • COMPS381F</p>
           </div>
 
           <div class="card-body p-5">
 
-            <% if (error) { %>
-              <div class="alert alert-danger text-center"><%= error %></div>
+            <!-- ERROR MESSAGE -->
+            <% if (typeof error !== 'undefined' && error) { %>
+              <div class="alert alert-danger rounded-4 mb-4">
+                <strong>Error:</strong> <%= error %>
+              </div>
             <% } %>
 
-            <div class="alert alert-info text-center small mb-4">
-              <strong>Demo Account:</strong><br>
-              Username: <code class="bg-light px-2">admin</code> | 
-              Password: <code class="bg-light px-2">admin123</code>
-            </div>
+            <!-- SUCCESS MESSAGE -->
+            <% if (typeof success !== 'undefined' && success) { %>
+              <div class="alert alert-success rounded-4 mb-4">
+                <%= success %>
+              </div>
+            <% } %>
 
-            <!-- LOGIN FORM - 100% NO AUTO-FILL -->
-            <form action="/login" method="POST" autocomplete="off">
+            <!-- LOGIN FORM -->
+            <form action="/login" method="POST">
               <div class="mb-4">
                 <label class="form-label fw-bold">Username</label>
-                <input type="text"
-                       name="username"
-                       class="form-control form-control-lg"
-                       placeholder="Enter username"
-                       required
-                       autocomplete="off"
-                       readonly
-                       onfocus="this.removeAttribute('readonly')"
-                       onblur="this.setAttribute('readonly', true)">
+                <input type="text" name="username" class="form-control form-control-lg" 
+                       placeholder="Enter username" required autofocus>
               </div>
-
               <div class="mb-4">
                 <label class="form-label fw-bold">Password</label>
-                <input type="password"
-                       name="password"
-                       class="form-control form-control-lg"
-                       placeholder="Enter password"
-                       required
-                       autocomplete="new-password"
-                       readonly
-                       onfocus="this.removeAttribute('readonly')"
-                       onblur="this.setAttribute('readonly', true)">
+                <input type="password" name="password" class="form-control form-control-lg" 
+                       placeholder="Enter password" required>
               </div>
-
-              <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold shadow-sm">
-                Login
-              </button>
+              <div class="d-grid">
+                <button type="submit" class="btn btn-success btn-lg btn-glow shadow-lg">
+                  Login
+                </button>
+              </div>
             </form>
 
             <div class="text-center mt-4">
-              <a href="/forgot-password" class="text-decoration-none small text-white">
+              <small class="text-muted">
+                Default: <code>admin</code> / <code>admin123</code>
+              </small>
+            </div>
+
+            <!-- FORGOT PASSWORD LINK -->
+            <div class="text-center mt-4">
+              <a href="#" data-bs-toggle="modal" data-bs-target="#forgotModal" class="text-primary fw-bold">
                 Forgot Password?
               </a>
             </div>
+
           </div>
         </div>
 
-        <div class="text-center text-white mt-4 small opacity-80">
-          © 2025 Group 4 • All rights reserved
+        <div class="text-center mt-4 text-white">
+          <small>© Group 4 • November 2025</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORGOT PASSWORD MODAL (3-STEP FLOW) -->
+  <div class="modal fade" id="forgotModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 overflow-hidden">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Reset Password</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-5">
+
+          <!-- STEP 1: Enter username -->
+          <div id="step1">
+            <p>Enter your username to reset password.</p>
+            <form action="/forgot-password" method="POST">
+              <div class="mb-3">
+                <input type="text" name="username" class="form-control form-control-lg" 
+                       placeholder="Username" required>
+              </div>
+              <div class="d-grid">
+                <button type="submit" class="btn btn-primary btn-lg">Send Reset Link</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- STEP 2 & 3 will be handled by your existing routes -->
+          <!-- /reset-password/:token (GET + POST) already working in your server.js -->
+
         </div>
       </div>
     </div>
   </div>
 
   <!-- Cookie Banner -->
-  <div id="cookieBanner" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#1e3a8a; color:white; padding:16px 24px; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.4); z-index:9999; max-width:440px; width:calc(100%-40px); text-align:center;">
-    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:15px;">
-      <div><strong>We use cookies</strong><br><small>For secure login</small></div>
-      <div>
-        <button onclick="localStorage.setItem('cookieConsent','accepted');this.parentElement.parentElement.parentElement.style.display='none'" 
-                class="btn btn-light btn-sm">Accept</button>
-      </div>
+  <div id="cookieBanner" class="position-fixed bottom-0 start-50 translate-middle-x bg-dark text-white p-4 rounded-4 shadow-lg"
+       style="display:none; z-index:9999; max-width:500px;">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div><strong>We use cookies</strong><br><small>For secure login session</small></div>
+      <button onclick="localStorage.setItem('cookieConsent','accepted');this.parentElement.parentElement.style.display='none'"
+              class="btn btn-light btn-sm fw-bold">Accept</button>
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     if (!localStorage.getItem('cookieConsent')) {
-      document.getElementById('cookieBanner').style.display = 'block';
+      setTimeout(() => document.getElementById('cookieBanner').style.display = 'block', 1000);
     }
   </script>
 </body>
