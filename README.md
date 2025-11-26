@@ -1,7 +1,7 @@
 # Student Manager – COMPS381F Final Project (Group 4)
 
 ### 1. Project Information
-- **Project Name**: Student Manager (Full-Stack Secure CRUD Application)
+- **Project Name**: Student Manager
 - **Course**: COMPS381F
 - **Group Number**: Group 4
 - **Members**:
@@ -11,19 +11,17 @@
   - Li Lok Yiu (SID 13512448)
   - Ning Rui Qi (SID 13053319)
 
-### 2. Key Features (All Working)
+### 2. Key Features (All finished)
 - Full **CRUD** with **search & filter** (by Name, Major, Age range, Gender)
 - Secure **login system** with bcrypt-hashed password
 - **Forgot Password** flow (professional 3-step reset)
-- **Gender field** (Male/Female) in both Create & Edit forms
+- **5 student attribution field** (name,id,age,gender,major) in both Create & Edit forms
 - Clean, responsive UI using **Bootstrap 5 + EJS**
-- Public **RESTful API** (no auth required – perfect for testing)
+- Public **RESTful API** 
 - Deployed on **Render.com** + **MongoDB Atlas**
 
 ### 3. Live Demo (Always Online)
 **https://s381-kvzy.onrender.com**
-
-> Note: Render free tier sleeps after inactivity → first visit may take 15–30 seconds
 
 ### 4. Default Login Credentials
 | Username | Password  |
