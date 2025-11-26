@@ -45,21 +45,21 @@ After login → go to: https://s381-kvzy.onrender.com/students
 
 
 # READ student information
-curl https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a
+curl https://s381-kvzy.onrender.com/api/students/(student id here)
 
 # UPDATE age
-curl -X PUT https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a \
+curl -X PUT https://s381-kvzy.onrender.com/api/students/(student id here) \
   -H "Content-Type: application/json" \
   -d '{"age": 22}'
 
 
 # UPDATE major
-curl -X PUT https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a \
+curl -X PUT https://s381-kvzy.onrender.com/api/students/(student id here) \
   -H "Content-Type: application/json" \
   -d '{"major": "Computer Science"}'
 
 # DELETE
-curl -X DELETE https://s381-kvzy.onrender.com/api/students/69208fcde2557fab21ce4d6a
+curl -X DELETE https://s381-kvzy.onrender.com/api/students/(student id here)
 
 # CREATE new
 curl -X POST https://s381-kvzy.onrender.com/api/students \
